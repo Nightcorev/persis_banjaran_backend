@@ -1,0 +1,75 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Judul API Anda",
+        "description": "Deskripsi API Anda",
+        "contact": {
+            "email": "email@example.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
+    },
+    "paths": {
+        "/api/data_jamaah": {
+            "get": {
+                "tags": [
+                    "Jamaah"
+                ],
+                "summary": "Ambil semua data Jamaah",
+                "operationId": "5e343f569f14157e22a28a4fa1425b56",
+                "responses": {
+                    "200": {
+                        "description": "Sukses",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Jamaah"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Jamaah": {
+                "title": "Jamaah",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "nama_jamaah": {
+                        "type": "string",
+                        "example": "Jamaah Al-Munawwar"
+                    },
+                    "tgl_pelaksanaan": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2023-01-01"
+                    },
+                    "tgl_akhir_jihad": {
+                        "type": "string",
+                        "format": "date",
+                        "example": "2023-12-31"
+                    }
+                },
+                "type": "object"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Jamaah",
+            "description": "API untuk mengelola data monografi Jamaah"
+        }
+    ]
+}

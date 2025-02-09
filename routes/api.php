@@ -4,6 +4,7 @@ use App\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AnggotaController;
+use App\Http\Controllers\JamaahController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -24,6 +25,8 @@ Route::get('/anggota/{id}', [AnggotaController::class, 'show']);
 Route::post('/anggota', [AnggotaController::class, 'store']);
 Route::put('/anggota/{id}', [AnggotaController::class, 'update']);
 Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy']);
+
+Route::get('/data_jamaah', [JamaahController::class, 'index']);
 
 Route::get('webhooks', [WebhookController::class, 'verifyWebhook']);
 Route::post('webhooks', [WebhookController::class, 'handleWebhook']);

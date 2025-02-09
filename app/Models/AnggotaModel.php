@@ -1,59 +1,92 @@
 <?php
 
 namespace App\Models;
-
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class AnggotaModel
+class AnggotaModel extends Model
 {
-    // public function getAnggota()
-    // {
-    //     $sql = "SELECT t_anggota.id_anggota, nik, nama_lengkap, tanggal_lahir, nama_jamaah, no_telp, foto, status_aktif, keterangan, pendidikan, nama_pekerjaan
-    //             FROM t_anggota
-    //             INNER JOIN t_master_jamaah ON t_anggota.id_master_jamaah = t_master_jamaah.id_master_jamaah
-    //             LEFT JOIN t_anggota_pendidikan ON t_anggota.id_anggota = t_anggota_pendidikan.id_anggota
-    //             LEFT JOIN t_tingkat_pendidikan ON t_anggota_pendidikan.id_tingkat_pendidikan = t_tingkat_pendidikan.id_tingkat_pendidikan
-    //             LEFT JOIN t_anggota_pekerjaan ON t_anggota.id_anggota = t_anggota_pekerjaan.id_anggota LEFT JOIN  t_master_pekerjaan ON t_anggota_pekerjaan.id_master_pekerjaan = t_master_pekerjaan.id_master_pekerjaan
-    //             ORDER BY t_master_jamaah.id_master_jamaah, t_anggota.nama_lengkap ASC;";
+    use HasFactory;
 
-    //     $result = DB::connection('pgsql')->select($sql);
+    protected $table = 't_anggota';
+    protected $primaryKey = 'id_anggota';
+    protected $fillable = [
+        'nik',
+        'nama_lengkap',
+        'tempat_lahir',
+        'tanggal_lahir',
+        'status_merital',
+        'golongan_darah',
+        'email',
+        'no_telp',
+        'alamat',
+        'masa_aktif_anggota',
+        'foto',
+        'status_aktif',
+        'keterangan'
+    ];
 
-    //     return $result;
-    // }
-
-    public function getAnggota($page, $perPage, $searchTerm = '')
+    public function master_jamaah()
     {
-        $offset = ($page - 1) * $perPage;
-
-        // Modifikasi query untuk menambahkan pencarian
-        $sql = "SELECT t_anggota.id_anggota, nik, nama_lengkap, tanggal_lahir, nama_jamaah, no_telp, foto, status_aktif, keterangan, pendidikan, nama_pekerjaan
-            FROM t_anggota
-            INNER JOIN t_master_jamaah ON t_anggota.id_master_jamaah = t_master_jamaah.id_master_jamaah
-            LEFT JOIN t_anggota_pendidikan ON t_anggota.id_anggota = t_anggota_pendidikan.id_anggota
-            LEFT JOIN t_tingkat_pendidikan ON t_anggota_pendidikan.id_tingkat_pendidikan = t_tingkat_pendidikan.id_tingkat_pendidikan
-            LEFT JOIN t_anggota_pekerjaan ON t_anggota.id_anggota = t_anggota_pekerjaan.id_anggota
-            LEFT JOIN t_master_pekerjaan ON t_anggota_pekerjaan.id_master_pekerjaan = t_master_pekerjaan.id_master_pekerjaan
-            WHERE (t_anggota.nama_lengkap ILIKE :searchTerm OR t_anggota.nik ILIKE :searchTerm)
-            ORDER BY t_master_jamaah.id_master_jamaah, t_anggota.nama_lengkap ASC
-            LIMIT :perPage OFFSET :offset";
-
-        return DB::connection('pgsql')->select($sql, [
-            'perPage' => $perPage,
-            'offset' => $offset,
-            'searchTerm' => "%{$searchTerm}%" // Menambahkan wildcard untuk pencarian
-        ]);
+        return $this->belongsTo(MasterJamaahModel::class, 'id_master_jamaah', 'id_master_jamaah');
     }
 
-    public function getTotalAnggota($searchTerm = '')
+    public function master_otonom()
     {
-        // Modifikasi query untuk hitung total data berdasarkan pencarian
-        $sql = "SELECT COUNT(*) AS total FROM t_anggota
-            WHERE t_anggota.nama_lengkap ILIKE :searchTerm OR t_anggota.nik ILIKE :searchTerm";
+        return $this->belongsTo(MasterOtonomModel::class, 'id_otonom', 'id_otonom');
+    }
 
-        $result = DB::connection('pgsql')->select($sql, [
-            'searchTerm' => "%{$searchTerm}%" // Menambahkan wildcard untuk pencarian
-        ]);
-        return $result[0]->total ?? 0;
+
+
+    public function anggota_iuran()
+    {
+        return $this->hasOne(AnggotaIuranModel::class, 'id_anggota', 'id_anggota');
+    }
+
+    public function anggota_keluarga()
+    {
+        return $this->hasOne(AnggotaKeluargaModel::class, 'id_anggota', 'id_anggota');
+    }
+
+    public function anggota_keterampilan()
+    {
+        return $this->hasOne(AnggotaKeterampilanModel::class, 'id_anggota', 'id_anggota');
+    }
+
+    public function anggota_mutasi()
+    {
+        return $this->hasOne(AnggotaMutasiModel::class, 'id_anggota', 'id_anggota');
+    }
+
+    public function anggota_organisasi()
+    {
+        return $this->hasOne(AnggotaOrganisasiModel::class, 'id_anggota', 'id_anggota');
+    }
+
+    public function anggota_pekerjaan()
+    {
+        return $this->hasOne(AnggotaPekerjaanModel::class, 'id_anggota', 'id_anggota');
+    }
+
+    public function anggota_pendidikan()
+    {
+        return $this->hasOne(AnggotaPendidikanModel::class, 'id_anggota', 'id_anggota');
+    }
+
+    public function anggota_training()
+    {
+        return $this->hasOne(AnggotaTrainingModel::class, 'id_anggota', 'id_anggota');
+    }
+
+    public function asatidz()
+    {
+        return $this->hasOne(AsatidzModel::class, 'id_anggota', 'id_anggota');
+    }
+
+    public function iuran_log()
+    {
+        return $this->hasOne(IuranLogModel::class, 'id_anggota', 'id_anggota');
     }
 }
 

@@ -27,6 +27,9 @@ Route::put('/anggota/{id}', [AnggotaController::class, 'update']);
 Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy']);
 
 Route::get('/data_jamaah', [JamaahController::class, 'index']);
+Route::get('/data_monografi', [AnggotaController::class, 'statistik']);
+Route::get('/data_chart', [AnggotaController::class, 'chart']);
+Route::get('/data_choice_pribadi', [AnggotaController::class, 'getChoiceDataPribadi']);
 
 Route::get('webhooks', [WebhookController::class, 'verifyWebhook']);
 Route::post('webhooks', [WebhookController::class, 'handleWebhook']);

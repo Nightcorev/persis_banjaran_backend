@@ -3,6 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @OA\Schema(
@@ -55,7 +56,25 @@ class MasterJamaahModel extends Model
 
     public function musyawarah()
     {
-        return $this->hasOne(MusyawarahModel::class, 'id_master_jamaah', 'id_master_jamaah');
+        return $this->hasOne(MusyawarahModel::class, 'id_musyawarah', 'id_master_jamaah');
     }
+
+    public function musyawarahDetail()
+    {
+        return $this->hasOneThrough(
+            MusyawarahDetailModel::class,
+            MusyawarahModel::class,
+            'id_master_jamaah', // Foreign key di `t_musyawarah`
+            'id_musyawarah', // Foreign key di `t_musyawarah_detail`
+            'id_master_jamaah', // Primary key di `t_master_jamaah`
+            'id_musyawarah' // Primary key di `t_musyawarah`
+        );
+    }
+
+    public function monografi(): HasOne
+    {
+        return $this->hasOne(JamaahMonografiModel::class, 'id_jamaah', 'id_master_jamaah');
+    }
+
 }
 

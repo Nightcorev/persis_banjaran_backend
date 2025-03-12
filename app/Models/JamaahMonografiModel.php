@@ -37,13 +37,6 @@ class JamaahMonografiModel extends Model
         return $this->hasMany(AnggotaModel::class, 'id_master_jamaah', 'id_master_jamaah');
     }
 
-    public function jumlahPersis()
-    {
-        return AnggotaModel::where('id_master_jamaah', $this->id_master_jamaah)
-                           ->where('status_aktif', 1)
-                           ->count();
-    }
-
     public function monografi()
     {
         return $this->hasOne(JamaahMonografiModel::class, 'id_master_jamaah', 'id_master_jamaah');

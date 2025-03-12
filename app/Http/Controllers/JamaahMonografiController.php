@@ -41,7 +41,7 @@ class JamaahMonografiController extends Controller
             'nama_lengkap' => optional($jamaah->musyawarah->musyawarahDetail->first()->anggota)->nama_lengkap ?? 'Tidak Ada Ketua',
             'tgl_pelaksanaan' => optional($jamaah->musyawarah)->tgl_pelaksanaan,
             'tgl_akhir_jihad' => optional($jamaah->musyawarah)->tgl_akhir_jihad,
-            'jml_persis' => $jamaah->monografi->jum_persis ?? 0,
+            'jml_persis' => $jamaah->jumlahPersis() ?? 0,
             'jml_persistri' => $jamaah->monografi->jum_persistri ?? 0,
             'jml_pemuda' => $jamaah->monografi->jum_pemuda ?? 0,
             'jml_pemudi' => $jamaah->monografi->jum_pemudi ?? 0,

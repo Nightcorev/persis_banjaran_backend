@@ -19,4 +19,9 @@ class MusyawarahDetailModel extends Model
     {
         return $this->belongsTo(MusyawarahModel::class, 'id_musyawarah', 'id_musyawarah');
     }
+
+    public function anggota()
+    {
+        return $this->belongsTo(AnggotaModel::class, 'id_anggota', 'id_anggota');
+    }
 }

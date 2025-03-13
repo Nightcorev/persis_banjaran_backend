@@ -5,6 +5,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AnggotaController;
 use App\Http\Controllers\JamaahController;
+use App\Http\Controllers\JamaahMonografiController;
+
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -26,7 +29,7 @@ Route::post('/anggota', [AnggotaController::class, 'store']);
 Route::put('/anggota/{id}', [AnggotaController::class, 'update']);
 Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy']);
 
-Route::get('/data_jamaah', [JamaahController::class, 'index']);
+Route::get('/data_jamaah', [JamaahMonografiController::class, 'index']);
 Route::get('/data_monografi', [AnggotaController::class, 'statistik']);
 Route::get('/data_chart', [AnggotaController::class, 'chart']);
 Route::get('/data_choice_pribadi', [AnggotaController::class, 'getChoiceDataPribadi']);

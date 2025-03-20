@@ -26,7 +26,8 @@ class MasterJamaahModel extends Model
     protected $fillable = [
         'nama_jamaah',
         'tgl_pelaksanaan',
-        'tgl_akhir_jihad'
+        'tgl_akhir_jihad',
+        'alamat'
     ];
 
     public function anggota()

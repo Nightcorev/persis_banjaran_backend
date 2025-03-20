@@ -200,5 +200,35 @@ class AnggotaController extends Controller
             'otonom' => $dataOtonom
         ], 200);
     }
-}
+
+    public function indexByJamaah(Request $request, $id_master_jamaah = null)
+    {
+        $perPage = $request->input('perPage', 5);
+        $page = $request->input('page', 1);
+        $searchTerm = $request->input('searchTerm', '');
+    
+        $query = AnggotaModel::with([
+            'master_jamaah', 
+            'anggota_pendidikan', 
+            'anggota_pekerjaan.master_pekerjaan' // This uses dot notation for nested relationships
+        ])
+            ->when($id_master_jamaah, function ($query, $id_master_jamaah) {
+                return $query->where('id_master_jamaah', $id_master_jamaah);
+            })
+            ->when($searchTerm, function ($query, $searchTerm) {
+                return $query->where('nama_lengkap', 'like', "%{$searchTerm}%");
+            })
+            ->orderBy('id_master_jamaah', 'asc');
+    
+            if (!empty($searchTerm)) {
+                $query->where('nama_lengkap', 'like', "%{$searchTerm}%");
+            }
+        
+            $anggota = $query->paginate($perPage, ['*'], 'page', $page);
+    
+        return response()->json(['status' => 200, 'data' => $anggota], 200);
+    }
+    
+}  
+
 

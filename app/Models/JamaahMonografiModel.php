@@ -24,7 +24,8 @@ class JamaahMonografiModel extends Model
         'jum_santri_mi',
         'jum_santri_tsn',
         'jum_santri_smp',
-        'jum_santri_ma'
+        'jum_santri_ma',
+
     ];
 
     public function masterJamaah()

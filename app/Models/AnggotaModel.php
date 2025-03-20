@@ -37,8 +37,6 @@ class AnggotaModel extends Model
         return $this->belongsTo(MasterOtonomModel::class, 'id_otonom', 'id_otonom');
     }
 
-
-
     public function anggota_iuran()
     {
         return $this->hasOne(AnggotaIuranModel::class, 'id_anggota', 'id_anggota');
@@ -87,6 +85,19 @@ class AnggotaModel extends Model
     public function iuran_log()
     {
         return $this->hasOne(IuranLogModel::class, 'id_anggota', 'id_anggota');
+    }
+
+
+    public function master_pekerjaan()
+    {
+        return $this->hasOneThrough(
+            'App\Models\MasterPekerjaanModel',
+            'App\Models\AnggotaPekerjaanModel',
+            'id_anggota', // Foreign key on AnggotaPekerjaanModel
+            'id_master_pekerjaan', // Foreign key on MasterPekerjaanModel
+            'id_anggota', // Local key on AnggotaModel
+            'id_master_pekerjaan' // Local key on AnggotaPekerjaanModel
+        );
     }
 }
 

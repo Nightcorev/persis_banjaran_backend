@@ -18,8 +18,9 @@ class AnggotaPekerjaanModel extends Model
     {
         return $this->belongsTo(AnggotaModel::class, 'id_anggota', 'id_anggota');
     }
+
     public function master_pekerjaan()
     {
-        return $this->belongsTo(MasterPekerjaanModel::class, 'id_anggota', 'id_anggota');
+        return $this->belongsTo('App\Models\MasterPekerjaanModel', 'id_master_pekerjaan', 'id_master_pekerjaan');
     }
 }

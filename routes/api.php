@@ -28,9 +28,12 @@ Route::get('/anggota/{id}', [AnggotaController::class, 'show']);
 Route::post('/anggota', [AnggotaController::class, 'store']);
 Route::put('/anggota/{id}', [AnggotaController::class, 'update']);
 Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy']);
+Route::get('/anggota/by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'indexByJamaah']);
 
 Route::get('/data_jamaah', [JamaahMonografiController::class, 'index']);
 Route::get('/data_monografi', [AnggotaController::class, 'statistik']);
+Route::get('/jamaah-monografi/{id_master_jamaah}', [JamaahMonografiController::class, 'show']);
+
 Route::get('/data_chart', [AnggotaController::class, 'chart']);
 Route::get('/data_choice_pribadi', [AnggotaController::class, 'getChoiceDataPribadi']);
 

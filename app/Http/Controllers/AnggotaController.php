@@ -23,6 +23,7 @@ class AnggotaController extends Controller
             't_anggota.id_anggota',
             't_anggota.nik',
             't_anggota.nama_lengkap',
+            't_anggota.email',
             't_anggota.tanggal_lahir',
             't_master_jamaah.nama_jamaah',
             't_anggota.no_telp',
@@ -52,28 +53,16 @@ class AnggotaController extends Controller
 
 
     // Get single data
-    public function show($id)
-    {
-
-    }
+    public function show($id) {}
 
     // Create data
-    public function store(Request $request)
-    {
-
-    }
+    public function store(Request $request) {}
 
     // Update data
-    public function update(Request $request, $id)
-    {
-
-    }
+    public function update(Request $request, $id) {}
 
     // Delete data
-    public function destroy($id)
-    {
-
-    }
+    public function destroy($id) {}
 
     public function statistik()
     {
@@ -206,10 +195,10 @@ class AnggotaController extends Controller
         $perPage = $request->input('perPage', 5);
         $page = $request->input('page', 1);
         $searchTerm = $request->input('searchTerm', '');
-    
+
         $query = AnggotaModel::with([
-            'master_jamaah', 
-            'anggota_pendidikan', 
+            'master_jamaah',
+            'anggota_pendidikan',
             'anggota_pekerjaan.master_pekerjaan' // This uses dot notation for nested relationships
         ])
             ->when($id_master_jamaah, function ($query, $id_master_jamaah) {
@@ -219,16 +208,43 @@ class AnggotaController extends Controller
                 return $query->where('nama_lengkap', 'like', "%{$searchTerm}%");
             })
             ->orderBy('id_master_jamaah', 'asc');
-    
-            if (!empty($searchTerm)) {
-                $query->where('nama_lengkap', 'like', "%{$searchTerm}%");
-            }
-        
-            $anggota = $query->paginate($perPage, ['*'], 'page', $page);
-    
+
+        if (!empty($searchTerm)) {
+            $query->where('nama_lengkap', 'like', "%{$searchTerm}%");
+        }
+
+        $anggota = $query->paginate($perPage, ['*'], 'page', $page);
+
         return response()->json(['status' => 200, 'data' => $anggota], 200);
     }
-    
-}  
 
 
+
+
+    public function selectAll(Request $request)
+    {
+        $searchTerm = $request->input('searchTerm', ''); // Kata kunci pencarian
+
+        // Query untuk memuat data dengan kolom tertentu
+        $query = AnggotaModel::select(
+            't_anggota.id_anggota',
+            't_anggota.nik',
+            't_anggota.nama_lengkap',
+            't_anggota.email'
+        )->orderBy('t_anggota.nama_lengkap', 'asc');
+
+        // Tambahkan filter pencarian jika ada
+        if (!empty($searchTerm)) {
+            $query->where('t_anggota.nama_lengkap', 'like', "%{$searchTerm}%");
+        }
+
+        // Ambil semua data tanpa paginasi
+        $anggota = $query->get();
+
+        // Kembalikan respons dalam format JSON
+        return response()->json([
+            'status' => 200,
+            'data' => $anggota,
+        ], 200);
+    }
+}

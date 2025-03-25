@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -21,6 +23,9 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'username',
+        'role_id',
+        'id_anggota'
     ];
 
     /**
@@ -41,4 +46,24 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function role(): BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function anggota(): BelongsTo
+    {
+        return $this->belongsTo(AnggotaModel::class, 'id_anggota', 'id_anggota');
+    }
+
+    public function tokens(): HasMany
+    {
+        return $this->hasMany(UserToken::class);
+    }
+
+    public function logs(): HasMany
+    {
+        return $this->hasMany(AuthenticationLog::class);
+    }
 }

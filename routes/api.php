@@ -6,7 +6,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AnggotaController;
 use App\Http\Controllers\JamaahController;
 use App\Http\Controllers\JamaahMonografiController;
-
+use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\UserController;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,6 +27,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/anggota', [AnggotaController::class, 'index']);
+Route::get('/anggota/all', [AnggotaController::class, 'selectAll']);
 Route::get('/anggota/{id}', [AnggotaController::class, 'show']);
 Route::post('/anggota', [AnggotaController::class, 'store']);
 Route::put('/anggota/{id}', [AnggotaController::class, 'update']);
@@ -36,3 +40,24 @@ Route::get('/data_choice_pribadi', [AnggotaController::class, 'getChoiceDataPrib
 
 Route::get('webhooks', [WebhookController::class, 'verifyWebhook']);
 Route::post('webhooks', [WebhookController::class, 'handleWebhook']);
+
+Route::prefix('permissions')->group(function () {
+    Route::get('/', [PermissionController::class, 'index']);
+    Route::post('/', [PermissionController::class, 'store']);
+    Route::put('/{id}', [PermissionController::class, 'update']);
+    Route::delete('/{id}', [PermissionController::class, 'destroy']);
+});
+
+Route::prefix('roles')->group(function () {
+    Route::get('/', [RoleController::class, 'index']);
+    Route::post('/', [RoleController::class, 'store']);
+    Route::put('/{id}', [RoleController::class, 'update']);
+    Route::delete('/{id}', [RoleController::class, 'destroy']);
+});
+
+Route::prefix('users')->group(function () {
+    Route::get('/', [UserController::class, 'index']);
+    Route::post('/', [UserController::class, 'store']);
+    Route::put('/{id}', [UserController::class, 'update']);
+    Route::delete('/{id}', [UserController::class, 'destroy']);
+});

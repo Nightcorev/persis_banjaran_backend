@@ -6,7 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AnggotaController;
 use App\Http\Controllers\JamaahController;
 use App\Http\Controllers\JamaahMonografiController;
-
+use App\Http\Controllers\PesantrenController;
+use App\Http\Controllers\JamaahFasilitasController;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,3 +40,7 @@ Route::get('/data_choice_pribadi', [AnggotaController::class, 'getChoiceDataPrib
 
 Route::get('webhooks', [WebhookController::class, 'verifyWebhook']);
 Route::post('webhooks', [WebhookController::class, 'handleWebhook']);
+
+Route::get('/pesantren/by-jamaah/{id_master_jamaah?}', [PesantrenController::class, 'indexByJamaah']);
+
+Route::get('/fasilitas/by-jamaah/{id_master_jamaah?}', [JamaahFasilitasController::class, 'indexByJamaah']);

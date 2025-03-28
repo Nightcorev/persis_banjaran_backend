@@ -19,9 +19,4 @@ class JamaahFasilitasModel extends Model
     {
         return $this->belongsTo(MasterJamaahModel::class, 'id_master_jamaah', 'id_master_jamaah');
     }
-
-    public function pesantren()
-    {
-        return $this->belongsTo(PesantrenModel::class, 'id_pesantren', 'id_pesantren');
-    }
 }

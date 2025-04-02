@@ -10,8 +10,14 @@ class AnggotaPekerjaanModel extends Model
     use HasFactory;
     protected $table = 't_anggota_pekerjaan';
     protected $primaryKey = 'id_pekerjaan';
+    public $timestamps = false;
     protected $fillable = [
-        'Lainnya',
+        'id_anggota',
+        'id_master_pekerjaan',
+        'lainnya',
+        'nama_instasi',
+        'deskripsi_pekerjaan',
+        'pendapatan',
     ];
 
     public function anggota()

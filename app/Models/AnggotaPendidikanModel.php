@@ -10,7 +10,10 @@ class AnggotaPendidikanModel extends Model
     use HasFactory;
     protected $table = 't_anggota_pendidikan';
     protected $primaryKey = 'id_pendidikan';
+    public $timestamps = false;
     protected $fillable = [
+        'id_anggota',
+        'id_tingkat_pendidikan',
         'instansi',
         'jurusan',
         'tahun_masuk',

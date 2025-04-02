@@ -11,6 +11,7 @@ class AnggotaModel extends Model
 
     protected $table = 't_anggota';
     protected $primaryKey = 'id_anggota';
+    public $timestamps = false;
     protected $fillable = [
         'nik',
         'nama_lengkap',
@@ -24,7 +25,15 @@ class AnggotaModel extends Model
         'masa_aktif_anggota',
         'foto',
         'status_aktif',
-        'keterangan'
+        'keterangan',
+        'id_otonom',
+        'id_master_jamaah',
+        'nomor_ktp',
+        'tahun_masuk_anggota',
+        'tahun_haji',
+        'kajian_rutin',
+        'no_wa',
+        'alamat_tinggal',
     ];
 
     public function master_jamaah()

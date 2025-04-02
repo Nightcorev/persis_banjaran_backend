@@ -5,21 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class AnggotaKeluargaModel extends Model
+class AnggotaMinatModel extends Model
 {
+
     use HasFactory;
-    protected $table = 't_anggota_keluarga';
-    protected $primaryKey = 'id_keluarga';
+    protected $table = 't_anggota_minat';
+    protected $primaryKey = 'id_minat';
     public $timestamps = false;
     protected $fillable = [
         'id_anggota',
-        'jumlah_tanggungan',
-        'nama_istri',
-        'anggota_persistri',
-        'jumlah_seluruh_anak',
-        'jumlah_anak_pemuda',
-        'jumlah_anak_pemudi',
-        'status_kepemilikan_rumah'
+        'id_master_minat',
+        'lainnya',
     ];
 
     public function anggota()
@@ -27,4 +23,8 @@ class AnggotaKeluargaModel extends Model
         return $this->belongsTo(AnggotaModel::class, 'id_anggota', 'id_anggota');
     }
 
+    public function master_minat()
+    {
+        return $this->belongsTo(MasterMinatModel::class, 'id_master_minat', 'id_master_minat');
+    }
 }

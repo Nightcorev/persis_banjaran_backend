@@ -11,12 +11,15 @@ class AnggotaOrganisasiModel extends Model
 
     protected $table = 't_anggota_organisasi';
     protected $primaryKey = 'id_organisasi';
+    public $timestamps = false;
     protected $fillable = [
+        'id_anggota',
         'nama_organisasi',
         'jabatan',
         'tingkat',
         'tahun_mulai',
-        'tahun_selesai'
+        'tahun_selesai',
+        'keterlibatan_organisasi'
     ];
 
     public function anggota()

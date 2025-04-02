@@ -78,3 +78,14 @@ Route::middleware('auth.token')->group(function () {
         Route::delete('/{id}', [UserController::class, 'destroy']);
     });
 });
+
+Route::get('/data_choice_pribadi', [AnggotaController::class, 'getChoiceDataPribadi']);
+Route::get('/data_choice_pendidikan', [AnggotaController::class, 'getChoiceDataPendidikan']);
+Route::get('/data_choice_pekerjaan', [AnggotaController::class, 'getChoiceDataPekerjaan']);
+Route::get('/data_choice_keterampilan', [AnggotaController::class, 'getChoiceDataKeterampilan']);
+Route::get('/data_choice_minat', [AnggotaController::class, 'getChoiceDataMinat']);
+Route::get('/anggota', [AnggotaController::class, 'index']);
+Route::get('/get_anggota/{id}', [AnggotaController::class, 'show']);
+Route::post('/add_anggota', [AnggotaController::class, 'store']);
+Route::put('/edit_anggota/{id}', [AnggotaController::class, 'update']);
+Route::delete('/delete_anggota/{id}', [AnggotaController::class, 'destroy']);

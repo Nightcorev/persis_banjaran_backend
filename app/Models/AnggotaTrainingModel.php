@@ -5,14 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-//*NOTE: bingung sama id_training di t_master_training sama t_anggota_training
 class AnggotaTrainingModel extends Model
 {
     use HasFactory;
     protected $table = 't_anggota_training';
     protected $primaryKey = 'id_training';
+    public $timestamps = false;
     protected $fillable = [
-        'tingkat',
+        'id_anggota',
+        'nama_training',
         'tempat',
         'tanggal'
     ];

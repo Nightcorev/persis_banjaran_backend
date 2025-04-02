@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AnggotaController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\JamaahMonografiController;
+use App\Http\Controllers\PesantrenController;
+use App\Http\Controllers\JamaahFasilitasController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
@@ -53,6 +55,10 @@ Route::middleware('auth.token')->group(function () {
     Route::get('webhooks', [WebhookController::class, 'verifyWebhook']);
     Route::post('webhooks', [WebhookController::class, 'handleWebhook']);
 
+    // Route tambahan dari feat/data_monografi
+    Route::get('/pesantren/by-jamaah/{id_master_jamaah?}', [PesantrenController::class, 'indexByJamaah']);
+    Route::get('/fasilitas/by-jamaah/{id_master_jamaah?}', [JamaahFasilitasController::class, 'indexByJamaah']);
+
     // Route untuk Permissions
     Route::prefix('permissions')->group(function () {
         Route::get('/', [PermissionController::class, 'index']);
@@ -64,7 +70,6 @@ Route::middleware('auth.token')->group(function () {
     // Route untuk Roles
     Route::prefix('roles')->group(function () {
         Route::get('/', [RoleController::class, 'index']);
-
         Route::post('/', [RoleController::class, 'store']);
         Route::put('/{id}', [RoleController::class, 'update']);
         Route::delete('/{id}', [RoleController::class, 'destroy']);

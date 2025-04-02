@@ -189,7 +189,6 @@ class AnggotaController extends Controller
             'otonom' => $dataOtonom
         ], 200);
     }
-
     public function indexByJamaah(Request $request, $id_master_jamaah = null)
     {
         $perPage = $request->input('perPage', 5);
@@ -199,26 +198,21 @@ class AnggotaController extends Controller
         $query = AnggotaModel::with([
             'master_jamaah',
             'anggota_pendidikan',
-            'anggota_pekerjaan.master_pekerjaan' // This uses dot notation for nested relationships
+            'anggota_pekerjaan.master_pekerjaan'
         ])
             ->when($id_master_jamaah, function ($query, $id_master_jamaah) {
                 return $query->where('id_master_jamaah', $id_master_jamaah);
             })
-            ->when($searchTerm, function ($query, $searchTerm) {
-                return $query->where('nama_lengkap', 'like', "%{$searchTerm}%");
+            ->when(!empty($searchTerm), function ($query) use ($searchTerm) {
+                return $query->whereRaw('LOWER(nama_lengkap) LIKE ?', ["%" . strtolower($searchTerm) . "%"]);
             })
-            ->orderBy('id_master_jamaah', 'asc');
-
-        if (!empty($searchTerm)) {
-            $query->where('nama_lengkap', 'like', "%{$searchTerm}%");
-        }
+            ->orderBy('status_aktif', 'asc') // Menggunakan perubahan dari feat/data_monografi
+            ->orderBy('id_master_jamaah', 'asc'); // Menggunakan perubahan dari main
 
         $anggota = $query->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json(['status' => 200, 'data' => $anggota], 200);
     }
-
-
 
 
     public function selectAll(Request $request)

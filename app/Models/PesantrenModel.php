@@ -17,18 +17,19 @@ class PesantrenModel extends Model
         'nama_mudir',
         'jum_santri',
         'alamat',
-        'no_kontak'
+        'no_kontak',
     ];
 
     public function master_jamaah()
     {
         return $this->belongsTo(MasterJamaahModel::class, 'id_master_jamaah', 'id_master_jamaah');
     }
-
+    
     public function asatidz_tugas()
     {
-        return $this->hasOne(AsatidzTugasModel::class, 'id_pesantren', 'id_pesantren');
+        return $this->hasMany(AsatidzTugasModel::class, 'id_pesantren', 'id_pesantren');
     }
+
     public function jamaah_fasilitas()
     {
         return $this->hasOne(JamaahFasilitasModel::class, 'id_pesantren', 'id_pesantren');

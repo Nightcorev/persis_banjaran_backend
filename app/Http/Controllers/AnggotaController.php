@@ -493,6 +493,63 @@ class AnggotaController extends Controller
         ], 200);
     }
 
+    public function indexByJamaah(Request $request, $id_master_jamaah = null)
+    {
+        $perPage = $request->input('perPage', 5);
+        $page = $request->input('page', 1);
+        $searchTerm = $request->input('searchTerm', '');
+
+        $query = AnggotaModel::with([
+            'master_jamaah',
+            'anggota_pendidikan',
+            'anggota_pekerjaan.master_pekerjaan' // This uses dot notation for nested relationships
+        ])
+            ->when($id_master_jamaah, function ($query, $id_master_jamaah) {
+                return $query->where('id_master_jamaah', $id_master_jamaah);
+            })
+            ->when($searchTerm, function ($query, $searchTerm) {
+                return $query->where('nama_lengkap', 'like', "%{$searchTerm}%");
+            })
+            ->orderBy('id_master_jamaah', 'asc');
+
+        if (!empty($searchTerm)) {
+            $query->where('nama_lengkap', 'like', "%{$searchTerm}%");
+        }
+
+        $anggota = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json(['status' => 200, 'data' => $anggota], 200);
+    }
+
+
+
+
+    public function selectAll(Request $request)
+    {
+        $searchTerm = $request->input('searchTerm', ''); // Kata kunci pencarian
+
+        // Query untuk memuat data dengan kolom tertentu
+        $query = AnggotaModel::select(
+            't_anggota.id_anggota',
+            't_anggota.nik',
+            't_anggota.nama_lengkap',
+            't_anggota.email'
+        )->orderBy('t_anggota.nama_lengkap', 'asc');
+
+        // Tambahkan filter pencarian jika ada
+        if (!empty($searchTerm)) {
+            $query->where('t_anggota.nama_lengkap', 'like', "%{$searchTerm}%");
+        }
+
+        // Ambil semua data tanpa paginasi
+        $anggota = $query->get();
+
+        // Kembalikan respons dalam format JSON
+        return response()->json([
+            'status' => 200,
+            'data' => $anggota,
+        ], 200);
+    }
     public function getChoiceDataPendidikan()
     {
         $dataPendidikan = TingkatPendidikanModel::select(
@@ -502,24 +559,6 @@ class AnggotaController extends Controller
 
         return response()->json([
             'pendidikan' => $dataPendidikan,
-        ], 200);
-    }
-
-    public function getChoiceDataPekerjaanKeterampilan()
-    {
-        $dataPekerjaan = MasterPekerjaanModel::select(
-            'id_master_pekerjaan',
-            'nama_pekerjaan'
-        )->get();
-
-        $dataKeterampilan = MasterKeterampilanModel::select(
-            'id_master_keterampilan',
-            'nama_keterampilan'
-        )->get();
-
-        return response()->json([
-            'pekerjaan' => $dataPekerjaan,
-            'keterampilan' => $dataKeterampilan
         ], 200);
     }
 
@@ -629,32 +668,5 @@ class AnggotaController extends Controller
             ->get();
 
         return response()->json($result, 200);
-    }
-
-    public function selectAll(Request $request)
-    {
-        $searchTerm = $request->input('searchTerm', ''); // Kata kunci pencarian
-
-        // Query untuk memuat data dengan kolom tertentu
-        $query = AnggotaModel::select(
-            't_anggota.id_anggota',
-            't_anggota.nik',
-            't_anggota.nama_lengkap',
-            't_anggota.email'
-        )->orderBy('t_anggota.nama_lengkap', 'asc');
-
-        // Tambahkan filter pencarian jika ada
-        if (!empty($searchTerm)) {
-            $query->where('t_anggota.nama_lengkap', 'like', "%{$searchTerm}%");
-        }
-
-        // Ambil semua data tanpa paginasi
-        $anggota = $query->get();
-
-        // Kembalikan respons dalam format JSON
-        return response()->json([
-            'status' => 200,
-            'data' => $anggota,
-        ], 200);
     }
 }

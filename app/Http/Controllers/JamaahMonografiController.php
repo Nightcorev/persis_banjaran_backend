@@ -27,7 +27,7 @@ class JamaahMonografiController extends Controller
 
     // Filter pencarian berdasarkan nama jamaah
     if (!empty($searchTerm)) {
-        $query->where('nama_jamaah', 'like', "%{$searchTerm}%");
+        $query->whereRaw('LOWER(nama_jamaah) LIKE ?', ["%".strtolower($searchTerm)."%"]);
     }
 
     // Paginasi data
@@ -70,55 +70,73 @@ class JamaahMonografiController extends Controller
     }
 
     public function show($id_master_jamaah)
-    {
-        // Cari data jamaah berdasarkan id_master_jamaah
-        $jamaah = MasterJamaahModel::with([
-            'musyawarah' => function ($query) {
-                $query->where('aktif', 1);
-            },
-            'musyawarah.musyawarahDetail' => function ($query) {
-                $query->where('jabatan', 'Ketua');
-            },
-            'musyawarah.musyawarahDetail.anggota',
-            'monografi'
-        ])->where('id_master_jamaah', $id_master_jamaah)->first();
-    
-        // Jika data tidak ditemukan, kembalikan response error
-        if (!$jamaah) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Data Jamaah tidak ditemukan',
-                'data' => null,
-            ], 404);
-        }
-    
-        // Format data untuk response
-        $detailMonografi = [
-            'id_master_jamaah' => $jamaah->id_master_jamaah,
-            'nama_jamaah' => $jamaah->nama_jamaah,
-            'nama_lengkap' => optional($jamaah->musyawarah->musyawarahDetail->first()->anggota)->nama_lengkap ?? 'Tidak Ada Ketua',
-            'alamat' => $jamaah->alamat,
-            'jml_persis' => $jamaah->jumlahPersis() ?? 0,
-            'jml_persistri' => optional($jamaah->monografi)->jum_persistri ?? 0,
-            'jml_pemuda' => optional($jamaah->monografi)->jum_pemuda ?? 0,
-            'jml_pemudi' => optional($jamaah->monografi)->jum_pemudi ?? 0,
-            'jml_mubaligh' => optional($jamaah->monografi)->jum_mubaligh ?? 0,
-            'jml_asatidz' => optional($jamaah->monografi)->jum_asatidz ?? 0,
-            'jml_ra' => optional($jamaah->monografi)->jum_santri_ra ?? 0,
-            'jml_md' => optional($jamaah->monografi)->jum_santri_md ?? 0,
-            'jml_mi' => optional($jamaah->monografi)->jum_santri_mi ?? 0,
-            'jml_tsn' => optional($jamaah->monografi)->jum_santri_tsn ?? 0,
-            'jml_smp' => optional($jamaah->monografi)->jum_santri_smp ?? 0,
-            'jml_ma' => optional($jamaah->monografi)->jum_santri_ma ?? 0,
-            'tgl_pelaksanaan'=>$jamaah->musyawarah->tgl_pelaksanaan??0,
-            'tgl_akhir_jihad'=>$jamaah->musyawarah->tgl_akhir_jihad??0
-        ];
-    
+{   
+    $searchTerm = request('searchTerm');
+    $perPage = request('perPage', 5); // Default 5 jika tidak dikirim dari frontend
+
+    // Cari data jamaah berdasarkan id_master_jamaah
+    $jamaah = MasterJamaahModel::with([
+        'musyawarah' => function ($query) {
+            $query->where('aktif', 1);
+        },
+        'musyawarah.musyawarahDetail' => function ($query) {
+            $query->where('jabatan', 'Ketua');
+        },
+        'musyawarah.musyawarahDetail.anggota',
+        'monografi'
+    ])->where('id_master_jamaah', $id_master_jamaah)->first();
+
+    // Jika data tidak ditemukan, kembalikan response error
+    if (!$jamaah) {
         return response()->json([
-            'success' => true,
-            'message' => 'Detail Data Jamaah Monografi',
-            'data' => $detailMonografi,
-        ]);
+            'success' => false,
+            'message' => 'Data Jamaah tidak ditemukan',
+            'data' => null,
+        ], 404);
     }
+
+    // Ambil data musyawarah
+    $musyawarahData = [
+        'id_master_jamaah' => $jamaah->id_master_jamaah,
+        'nama_jamaah' => $jamaah->nama_jamaah,
+        'nama_lengkap' => optional($jamaah->musyawarah->musyawarahDetail->first()->anggota)->nama_lengkap ?? 'Tidak Ada Ketua',
+        'alamat' => $jamaah->alamat,
+        'jml_persis' => $jamaah->jumlahPersis() ?? 0,
+        'jml_persistri' => optional($jamaah->monografi)->jum_persistri ?? 0,
+        'jml_pemuda' => optional($jamaah->monografi)->jum_pemuda ?? 0,
+        'jml_pemudi' => optional($jamaah->monografi)->jum_pemudi ?? 0,
+        'jml_mubaligh' => optional($jamaah->monografi)->jum_mubaligh ?? 0,
+        'jml_asatidz' => optional($jamaah->monografi)->jum_asatidz ?? 0,
+        'jml_ra' => optional($jamaah->monografi)->jum_santri_ra ?? 0,
+        'jml_md' => optional($jamaah->monografi)->jum_santri_md ?? 0,
+        'jml_mi' => optional($jamaah->monografi)->jum_santri_mi ?? 0,
+        'jml_tsn' => optional($jamaah->monografi)->jum_santri_tsn ?? 0,
+        'jml_smp' => optional($jamaah->monografi)->jum_santri_smp ?? 0,
+        'jml_ma' => optional($jamaah->monografi)->jum_santri_ma ?? 0,
+        'tgl_pelaksanaan' => $jamaah->musyawarah->tgl_pelaksanaan ?? 0,
+        'tgl_akhir_jihad' => $jamaah->musyawarah->tgl_akhir_jihad ?? 0
+    ];
+
+    // **Filter berdasarkan searchTerm**
+    if ($searchTerm) {
+        if (stripos($musyawarahData['nama_lengkap'], $searchTerm) === false) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Tidak ada data yang cocok dengan pencarian',
+                'data' => null
+            ]);
+        }
+    }
+
+    // **Pagination (batasi jumlah data)**
+    $paginatedData = collect([$musyawarahData])->take($perPage);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Detail Data Jamaah Monografi',
+        'data' => $paginatedData->first(),
+    ]);
+}
+
 
 }

@@ -76,7 +76,19 @@ class AnggotaController extends Controller
         $keterampilan = AnggotaKeterampilanModel::where('id_anggota', $anggota->id_anggota)->first();
         $minat = AnggotaMinatModel::where('id_anggota', $anggota->id_anggota)->get();
         $organisasi = AnggotaOrganisasiModel::where('id_anggota', $anggota->id_anggota)->first();
+        $jamaah = MasterJamaahModel::where('id_master_jamaah', $anggota->id_master_jamaah)->first();
+        $otonom = MasterOtonomModel::where('id_otonom', $anggota->id_otonom)->first();
+        $tingkatPendidikan = TingkatPendidikanModel::where('id_tingkat_pendidikan', $pendidikan->id_tingkat_pendidikan)->first();
+        $masterPekerjaan = MasterPekerjaanModel::where('id_master_pekerjaan', $pekerjaan->id_master_pekerjaan)->first();
+        $masterKeterampilan = MasterKeterampilanModel::where('id_master_keterampilan', $keterampilan->id_master_keterampilan)->first();
+        $masterMinat = MasterMinatModel::whereIn('id_master_minat', $minat->pluck('id_master_minat'))->get();
 
+        $statusMapping = [
+            1 => 'Aktif',
+            0 => 'Tidak Aktif',
+            2 => 'Meninggal Dunia',
+            3 => 'Mutasi'
+        ];
         return response()->json([
             'personal' => [
                 'nomorAnggota' => $anggota->nik ?? '-',
@@ -90,8 +102,11 @@ class AnggotaController extends Controller
                 'alamat' => $anggota->alamat ?? '-',
                 'alamatTinggal' => $anggota->alamat_tinggal ?? '-',
                 'otonom' => $anggota->id_otonom ?? '-',
+                'namaOtonom' => $otonom->nama_otonom ?? '-',
                 'jamaah' => $anggota->id_master_jamaah ?? '-',
+                'namaJamaah' => $jamaah->nama_jamaah ?? '-',
                 'statusAktif' => $anggota->status_aktif ?? '-',
+                'namaStatusAktif' => $statusMapping[$anggota->status_aktif] ?? '-',
                 'tahunMasuk' => $anggota->tahun_masuk_anggota ?? '-',
                 'masaAktif' => $anggota->masa_aktif_anggota ?? '-',
                 'kajianRutin' => $anggota->kajian_rutin ?? '-',
@@ -109,6 +124,7 @@ class AnggotaController extends Controller
             ],
             'education' => [
                 'tingkat' => $pendidikan->id_tingkat_pendidikan ?? '-',
+                'namaTingkat' => $tingkatPendidikan->pendidikan ?? '-',
                 'namaSekolah' => $pendidikan->instansi ?? '-',
                 'jurusan' => $pendidikan->jurusan ?? '-',
                 'tahunMasuk' => $pendidikan->tahun_masuk ?? '-',
@@ -117,6 +133,7 @@ class AnggotaController extends Controller
             ],
             'work' => [
                 'pekerjaan' => $pekerjaan->id_master_pekerjaan ?? '-',
+                'namaPekerjaan' => $masterPekerjaan->nama_pekerjaan ?? '-',
                 'pekerjaanLainnya' => $pekerjaan->lainnya ?? '-',
                 'namaInstansi' => $pekerjaan->nama_instasi ?? '-',
                 'deskripsiPekerjaan' => $pekerjaan->deskripsi_pekerjaan ?? '-',
@@ -124,15 +141,18 @@ class AnggotaController extends Controller
             ],
             'skill' => [
                 'keterampilan' => $keterampilan->id_master_keterampilan ?? '-',
+                'namaKeterampilan' => $masterKeterampilan->nama_keterampilan ?? '-',
                 'keterampilanLainnya' => $keterampilan->lainnya ?? '-',
                 'deskripsiKeterampilan' => $keterampilan->deskripsi ?? '-',
             ],
-            'interest' => $minat->map(function ($item) {
+            'interest' => $minat->map(function ($item) use ($masterMinat) {
+                $namaMinat = $masterMinat->where('id_master_minat', $item->id_master_minat)->first();
                 return [
-                    'minat' => $item->id_master_minat ?? '-',
+                    'minat' => $namaMinat->nama_minat ?? '-',
                     'minatLainnya' => $item->lainnya ?? '-',
                 ];
             }),
+
             'organization' => [
                 'keterlibatanOrganisasi' => $organisasi->keterlibatan_organisasi ?? '-',
                 'namaOrganisasi' => $organisasi->nama_organisasi ?? '-',

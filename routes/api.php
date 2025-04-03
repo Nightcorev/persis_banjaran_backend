@@ -44,6 +44,7 @@ Route::middleware('auth.token')->group(function () {
 
     // Route untuk Data Jamaah dan Statistik
     Route::get('/data_jamaah', [JamaahMonografiController::class, 'index']);
+    Route::get('/data_chart', [AnggotaController::class, 'chart']);
     Route::get('/data_monografi', [AnggotaController::class, 'statistik']);
     Route::get('/jamaah-monografi/{id_master_jamaah}', [JamaahMonografiController::class, 'show']);
 

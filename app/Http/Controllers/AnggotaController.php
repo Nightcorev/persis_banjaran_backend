@@ -468,11 +468,11 @@ class AnggotaController extends Controller
             ->orderBy('t_master_pekerjaan.nama_pekerjaan')
             ->get();
 
-        $dataKeterampilan = AnggotaKeterampilanModel::selectRaw('t_master_minat.nama_minat, COUNT(t_anggota_keterampilan.id_anggota) as jumlah_anggota')
-            ->join('t_master_minat', 't_anggota_keterampilan.id_minat', '=', 't_master_minat.id_minat')
-            ->where('t_master_minat.nama_minat', '!=', 'Tidak Ada') // Mengecualikan 'Tidak Ada'
-            ->groupBy('t_master_minat.nama_minat')
-            ->orderBy('t_master_minat.nama_minat')
+        $dataKeterampilan = AnggotaKeterampilanModel::selectRaw('t_master_keterampilan.nama_keterampilan, COUNT(t_anggota_keterampilan.id_anggota) as jumlah_anggota')
+            ->join('t_master_keterampilan', 't_anggota_keterampilan.id_master_keterampilan', '=', 't_master_keterampilan.id_master_keterampilan')
+            ->where('t_master_keterampilan.nama_keterampilan', '!=', 'Tidak Ada') // Mengecualikan 'Tidak Ada'
+            ->groupBy('t_master_keterampilan.nama_keterampilan')
+            ->orderBy('t_master_keterampilan.nama_keterampilan')
             ->get();
 
         $dataMubaligh = MasterJamaahModel::select(

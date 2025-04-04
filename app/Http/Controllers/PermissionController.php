@@ -19,7 +19,11 @@ class PermissionController extends Controller
 
         // Filter pencarian berdasarkan nama permission
         if (!empty($searchTerm)) {
-            $query->where('name', 'like', "%{$searchTerm}%");
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('name_permission', 'like', "%{$searchTerm}%")
+                    ->orWhere('jenis_permission', 'like', "%{$searchTerm}%")
+                    ->orWhere('fitur', 'like', "%{$searchTerm}%");
+            });
         }
 
         // Paginasi data

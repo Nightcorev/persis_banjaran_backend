@@ -21,7 +21,10 @@ class RoleController extends Controller
 
         // Filter pencarian berdasarkan nama role
         if (!empty($searchTerm)) {
-            $query->where('name_role', 'like', "%{$searchTerm}%");
+            $query->where('name_role', 'like', "%{$searchTerm}%")
+                ->orWhereHas('permissions', function ($q) use ($searchTerm) {
+                    $q->where('name_permission', 'like', "%{$searchTerm}%");
+                });
         }
 
         // Paginasi data

@@ -56,9 +56,9 @@ Route::middleware('auth.token')->group(function () {
     Route::get('webhooks', [WebhookController::class, 'verifyWebhook']);
     Route::post('webhooks', [WebhookController::class, 'handleWebhook']);
 
-    // // Route tambahan dari feat/data_monografi
-    // Route::get('/pesantren/by-jamaah/{id_master_jamaah?}', [PesantrenController::class, 'indexByJamaah']);
-    // Route::get('/fasilitas/by-jamaah/{id_master_jamaah?}', [JamaahFasilitasController::class, 'indexByJamaah']);
+    // Route tambahan dari feat/data_monografi
+    Route::get('/pesantren/by-jamaah/{id_master_jamaah?}', [PesantrenController::class, 'indexByJamaah']);
+    Route::get('/fasilitas/by-jamaah/{id_master_jamaah?}', [JamaahFasilitasController::class, 'indexByJamaah']);
 
     // Route untuk Permissions
     Route::prefix('permissions')->group(function () {
@@ -95,7 +95,3 @@ Route::get('/get_anggota/{id}', [AnggotaController::class, 'show']);
 Route::post('/add_anggota', [AnggotaController::class, 'store']);
 Route::put('/edit_anggota/{id}', [AnggotaController::class, 'update']);
 Route::delete('/delete_anggota/{id}', [AnggotaController::class, 'destroy']);
-
-// // Route tambahan dari feat/data_monografi
-Route::get('/pesantren/by-jamaah/{id_master_jamaah?}', [PesantrenController::class, 'indexByJamaah']);
-Route::get('/fasilitas/by-jamaah/{id_master_jamaah?}', [JamaahFasilitasController::class, 'indexByJamaah']);

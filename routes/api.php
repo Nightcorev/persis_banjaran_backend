@@ -42,21 +42,26 @@ Route::middleware('auth.token')->group(function () {
         ->middleware('permission:data_anggota,delete');
     Route::get('/anggota/by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'indexByJamaah']);
 
+    Route::post('/upload-foto', [AnggotaController::class, 'uploadFoto']);
+
     // Route untuk Data Jamaah dan Statistik
     Route::get('/data_jamaah', [JamaahMonografiController::class, 'index']);
     Route::get('/data_chart', [AnggotaController::class, 'chart']);
     Route::get('/data_monografi', [AnggotaController::class, 'statistik']);
     Route::get('/jamaah-monografi/{id_master_jamaah}', [JamaahMonografiController::class, 'show']);
 
-    // Route tambahan
-    Route::get('/data_chart', [AnggotaController::class, 'chart']);
+    // Route untuk Data Pilihan DropDown
     Route::get('/data_choice_pribadi', [AnggotaController::class, 'getChoiceDataPribadi']);
+    Route::get('/data_choice_pendidikan', [AnggotaController::class, 'getChoiceDataPendidikan']);
+    Route::get('/data_choice_pekerjaan', [AnggotaController::class, 'getChoiceDataPekerjaan']);
+    Route::get('/data_choice_keterampilan', [AnggotaController::class, 'getChoiceDataKeterampilan']);
+    Route::get('/data_choice_minat', [AnggotaController::class, 'getChoiceDataMinat']);
 
     // Route untuk Webhooks
     Route::get('webhooks', [WebhookController::class, 'verifyWebhook']);
     Route::post('webhooks', [WebhookController::class, 'handleWebhook']);
 
-    // Route tambahan dari feat/data_monografi
+    // // Route tambahan dari feat/data_monografi
     Route::get('/pesantren/by-jamaah/{id_master_jamaah?}', [PesantrenController::class, 'indexByJamaah']);
     Route::get('/fasilitas/by-jamaah/{id_master_jamaah?}', [JamaahFasilitasController::class, 'indexByJamaah']);
 
@@ -85,11 +90,6 @@ Route::middleware('auth.token')->group(function () {
     });
 });
 
-Route::get('/data_choice_pribadi', [AnggotaController::class, 'getChoiceDataPribadi']);
-Route::get('/data_choice_pendidikan', [AnggotaController::class, 'getChoiceDataPendidikan']);
-Route::get('/data_choice_pekerjaan', [AnggotaController::class, 'getChoiceDataPekerjaan']);
-Route::get('/data_choice_keterampilan', [AnggotaController::class, 'getChoiceDataKeterampilan']);
-Route::get('/data_choice_minat', [AnggotaController::class, 'getChoiceDataMinat']);
 Route::get('/anggota', [AnggotaController::class, 'index']);
 Route::get('/get_anggota/{id}', [AnggotaController::class, 'show']);
 Route::post('/add_anggota', [AnggotaController::class, 'store']);

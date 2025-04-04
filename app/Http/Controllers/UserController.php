@@ -28,6 +28,8 @@ class UserController extends Controller
                 $q->where('name', 'like', "%{$searchTerm}%")
                     ->orWhere('email', 'like', "%{$searchTerm}%")
                     ->orWhere('username', 'like', "%{$searchTerm}%");
+            })->orWhereHas('role', function ($q) use ($searchTerm) {
+                $q->where('name_role', 'like', "%{$searchTerm}%");
             });
         }
 

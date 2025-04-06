@@ -18,6 +18,7 @@ use App\Models\MasterPekerjaanModel;
 use App\Models\MasterKeterampilanModel;
 use App\Models\MasterMinatModel;
 use App\Models\AnggotaOrganisasiModel;
+use illuminate\Support\Str;
 
 class AnggotaController extends Controller
 {
@@ -94,6 +95,7 @@ class AnggotaController extends Controller
 
         $query = AnggotaModel::select(
             't_anggota.id_anggota',
+            't_anggota.foto',
             't_anggota.nik',
             't_anggota.nama_lengkap',
             't_anggota.email',
@@ -254,6 +256,9 @@ class AnggotaController extends Controller
         ];
         return response()->json([
             'personal' => [
+                'fotoURL' => $anggota->foto
+                    ? "http://localhost:8000/storage/uploads/{$anggota->foto}"
+                    : "http://localhost:8000/storage/uploads/persis_default.jpeg",
                 'nomorAnggota' => $anggota->nik ?? '-',
                 'nomorKTP' => $anggota->nomor_ktp ?? '-',
                 'namaLengkap' => $anggota->nama_lengkap ?? '-',
@@ -273,52 +278,52 @@ class AnggotaController extends Controller
                 'tahunMasuk' => $anggota->tahun_masuk_anggota ?? '-',
                 'masaAktif' => $anggota->masa_aktif_anggota ?? '-',
                 'kajianRutin' => $anggota->kajian_rutin ?? '-',
-                'tahunHaji' => $anggota->tahun_haji ?? '-',
+                'tahunHaji' => $anggota->tahun_haji ?? null,
                 'keterangan' => $anggota->keterangan ?? '-',
             ],
             'family' => [
-                'jumlahTanggungan' => $keluarga->jumlah_tanggungan ?? '-',
-                'namaIstri' => $keluarga->nama_istri ?? '-',
-                'anggotaPersistri' => $keluarga->anggota_persistri ?? '-',
-                'statusKepemilikanRumah' => $keluarga->status_kepemilikan_rumah ?? '-',
-                'jumlaSeluruhAnak' => $keluarga->jumlah_seluruh_anak ?? '-',
-                'jumlaAnakPemuda' => $keluarga->jumlah_anak_pemuda ?? '-',
-                'jumlaAnakPemudi' => $keluarga->jumlah_anak_pemudi ?? '-',
+                'jumlahTanggungan' => $keluarga->jumlah_tanggungan ?? null,
+                'namaIstri' => $keluarga->nama_istri ?? null,
+                'anggotaPersistri' => $keluarga->anggota_persistri ?? null,
+                'statusKepemilikanRumah' => $keluarga->status_kepemilikan_rumah ?? null,
+                'jumlaSeluruhAnak' => $keluarga->jumlah_seluruh_anak ?? null,
+                'jumlaAnakPemuda' => $keluarga->jumlah_anak_pemuda ?? null,
+                'jumlaAnakPemudi' => $keluarga->jumlah_anak_pemudi ?? null,
             ],
             'education' => [
-                'tingkat' => $pendidikan->id_tingkat_pendidikan ?? '-',
-                'namaTingkat' => $tingkatPendidikan->pendidikan ?? '-',
-                'namaSekolah' => $pendidikan->instansi ?? '-',
-                'jurusan' => $pendidikan->jurusan ?? '-',
-                'tahunMasuk' => $pendidikan->tahun_masuk ?? '-',
-                'tahunKeluar' => $pendidikan->tahun_keluar ?? '-',
-                'jenisPendidikan' => $pendidikan->jenis_pendidikan ?? '-',
+                'tingkat' => $pendidikan->id_tingkat_pendidikan ?? null,
+                'namaTingkat' => $tingkatPendidikan->pendidikan ?? null,
+                'namaSekolah' => $pendidikan->instansi ?? null,
+                'jurusan' => $pendidikan->jurusan ?? null,
+                'tahunMasuk' => $pendidikan->tahun_masuk ?? null,
+                'tahunKeluar' => $pendidikan->tahun_keluar ?? null,
+                'jenisPendidikan' => $pendidikan->jenis_pendidikan ?? null,
             ],
             'work' => [
-                'pekerjaan' => $pekerjaan->id_master_pekerjaan ?? '-',
-                'namaPekerjaan' => $masterPekerjaan->nama_pekerjaan ?? '-',
-                'pekerjaanLainnya' => $pekerjaan->lainnya ?? '-',
-                'namaInstansi' => $pekerjaan->nama_instasi ?? '-',
-                'deskripsiPekerjaan' => $pekerjaan->deskripsi_pekerjaan ?? '-',
-                'pendapatan' => $pekerjaan->pendapatan ?? '-',
+                'pekerjaan' => $pekerjaan->id_master_pekerjaan ?? null,
+                'namaPekerjaan' => $masterPekerjaan->nama_pekerjaan ?? null,
+                'pekerjaanLainnya' => $pekerjaan->lainnya ?? null,
+                'namaInstansi' => $pekerjaan->nama_instasi ?? null,
+                'deskripsiPekerjaan' => $pekerjaan->deskripsi_pekerjaan ?? null,
+                'pendapatan' => $pekerjaan->pendapatan ?? null,
             ],
             'skill' => [
-                'keterampilan' => $keterampilan->id_master_keterampilan ?? '-',
-                'namaKeterampilan' => $masterKeterampilan->nama_keterampilan ?? '-',
-                'keterampilanLainnya' => $keterampilan->lainnya ?? '-',
-                'deskripsiKeterampilan' => $keterampilan->deskripsi ?? '-',
+                'keterampilan' => $keterampilan->id_master_keterampilan ?? null,
+                'namaKeterampilan' => $masterKeterampilan->nama_keterampilan ?? null,
+                'keterampilanLainnya' => $keterampilan->lainnya ?? null,
+                'deskripsiKeterampilan' => $keterampilan->deskripsi ?? null,
             ],
             'interest' => $minat->map(function ($item) use ($masterMinat) {
                 $namaMinat = $masterMinat->where('id_master_minat', $item->id_master_minat)->first();
                 return [
-                    'minat' => $namaMinat->nama_minat ?? '-',
-                    'minatLainnya' => $item->lainnya ?? '-',
+                    'minat' => $namaMinat->nama_minat ?? null,
+                    'minatLainnya' => $item->lainnya ?? null,
                 ];
             }),
 
             'organization' => [
-                'keterlibatanOrganisasi' => $organisasi->keterlibatan_organisasi ?? '-',
-                'namaOrganisasi' => $organisasi->nama_organisasi ?? '-',
+                'keterlibatanOrganisasi' => $organisasi->keterlibatan_organisasi ?? null,
+                'namaOrganisasi' => $organisasi->nama_organisasi ?? null,
             ]
         ]);
     }
@@ -414,7 +419,29 @@ class AnggotaController extends Controller
         Log::info('Data request:', $request->all());
 
         $dataPersonal = $request->input('personal');
+
+        $fullUrl = $dataPersonal['fotoURL'] ?? null;
+        $relativePath = str_replace("http://localhost:8000/storage/uploads/", "", $fullUrl);
+
+        $fileName = basename($relativePath);
+        $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION) ?: 'png';
+        $encryptedName = Str::random(10) . '.' . $fileExtension;
+
+        $oldPath = public_path("storage/uploads/" . $relativePath);
+        $newPath = public_path("storage/uploads/" . $encryptedName);
+
+        Log::info("Old Path: " . $oldPath);
+        Log::info("New Path: " . $newPath);
+
+        if (file_exists($oldPath)) {
+            rename($oldPath, $newPath);
+            Log::info("File berhasil dipindahkan.");
+        } else {
+            Log::error("File tidak ditemukan di path: " . $oldPath);
+        }
+
         $anggota = AnggotaModel::create([
+            'foto' => $encryptedName ?? "default",
             'nik' => $dataPersonal['nomorAnggota'] ?? null,
             'nomor_ktp' => $dataPersonal['nomorKTP'] ?? null,
             'nama_lengkap' => $dataPersonal['namaLengkap'] ?? null,
@@ -432,26 +459,26 @@ class AnggotaController extends Controller
             'status_aktif' => $dataPersonal['statusAktif'] ?? null,
             'tahun_masuk_anggota' => $dataPersonal['tahunMasuk'] ?? null,
             'masa_aktif_anggota' => $dataPersonal['masaAktif'] ?? null,
-            'kajian_rutin' => $dataPersonal['kajianRutin'] ?? '',
+            'kajian_rutin' => $dataPersonal['kajianRutin'] ?? null,
             'tahun_haji' => $dataPersonal['tahunHaji'] ?? null,
             'keterangan' => $dataPersonal['keterangan'] ?? null,
         ]);
 
         $keluarga = $request->input('family');
         AnggotaKeluargaModel::create([
-            'id_anggota' => $anggota->id_anggota ?? null,
-            'jumlah_tanggungan' => $keluarga['jumlahTanggungan'],
-            'nama_istri' => $keluarga['namaIstri'],
-            'anggota_persistri' => $keluarga['anggotaPersistri'],
-            'status_kepemilikan_rumah' => $keluarga['statusKepemilikanRumah'],
-            'jumlah_seluruh_anak' => $keluarga['jumlaSeluruhAnak'],
-            'jumlah_anak_pemuda' => $keluarga['jumlaAnakPemuda'],
-            'jumlah_anak_pemudi' => $keluarga['jumlaAnakPemudi'],
+            'id_anggota' => $anggota->id_anggota,
+            'jumlah_tanggungan' => $keluarga['jumlahTanggungan'] ?? null,
+            'nama_istri' => $keluarga['namaIstri'] ?? null,
+            'anggota_persistri' => $keluarga['anggotaPersistri'] ?? null,
+            'status_kepemilikan_rumah' => $keluarga['statusKepemilikanRumah'] ?? null,
+            'jumlah_seluruh_anak' => $keluarga['jumlaSeluruhAnak'] ?? null,
+            'jumlah_anak_pemuda' => $keluarga['jumlaAnakPemuda'] ?? null,
+            'jumlah_anak_pemudi' => $keluarga['jumlaAnakPemudi'] ?? null,
         ]);
 
         $pendidikan = $request->input('education');
         AnggotaPendidikanModel::create([
-            'id_anggota' => $anggota->id_anggota ?? null,
+            'id_anggota' => $anggota->id_anggota,
             'id_tingkat_pendidikan' => $pendidikan['tingkat'] ?? null,
             'instansi' => $pendidikan['namaSekolah'] ?? null,
             'jurusan' => $pendidikan['jurusan'] ?? null,
@@ -462,7 +489,7 @@ class AnggotaController extends Controller
 
         $pekerjaan = $request->input('work');
         AnggotaPekerjaanModel::create([
-            'id_anggota' => $anggota->id_anggota ?? null,
+            'id_anggota' => $anggota->id_anggota,
             'id_master_pekerjaan' => $pekerjaan['pekerjaan'] ?? null,
             'lainnya' => $pekerjaan['pekerjaanLainnya'] ?? null,
             'nama_instasi' => $pekerjaan['namaInstansi'] ?? null,
@@ -472,7 +499,7 @@ class AnggotaController extends Controller
 
         $keterampilan = $request->input('skill');
         AnggotaKeterampilanModel::create([
-            'id_anggota' => $anggota->id_anggota ?? null,
+            'id_anggota' => $anggota->id_anggota,
             'id_master_keterampilan' => $keterampilan['keterampilan'] ?? null,
             'lainnya' => $keterampilan['keterampilanLainnya'] ?? null,
             'deskripsi' => $keterampilan['deskripsiKeterampilan'] ?? null,
@@ -489,7 +516,7 @@ class AnggotaController extends Controller
 
         $organisasi = $request->input('organization');
         AnggotaOrganisasiModel::create([
-            'id_anggota' => $anggota->id_anggota ?? null,
+            'id_anggota' => $anggota->id_anggota,
             'keterlibatan_organisasi' => $organisasi['keterlibatanOrganisasi'] ?? null,
             'nama_organisasi' => $organisasi['namaOrganisasi'] ?? null,
         ]);
@@ -603,9 +630,39 @@ class AnggotaController extends Controller
         // Cari anggota berdasarkan ID
         $anggota = AnggotaModel::findOrFail($id);
 
+        $fullUrl = $request->input('personal.fotoURL');
+        $relativePath = str_replace("http://localhost:8000/storage/uploads/", "", $fullUrl);
+
+        if ($relativePath !== $anggota->foto) {
+            $fileName = basename($relativePath);
+            $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION) ?: 'png';
+            $encryptedName = Str::random(10) . '.' . $fileExtension;
+
+            $oldPath = public_path("storage/uploads/" . $anggota->foto);
+            $newPath = public_path("storage/uploads/" . $encryptedName);
+
+            // Hapus file lama jika ada
+            if (file_exists($oldPath) && $anggota->foto !== "default") {
+                unlink($oldPath);
+                Log::info("File lama dihapus: " . $oldPath);
+            }
+
+            // Pindahkan file baru
+            if (file_exists(public_path("storage/uploads/" . $relativePath))) {
+                rename(public_path("storage/uploads/" . $relativePath), $newPath);
+                Log::info("File baru disimpan: " . $newPath);
+
+                // Update nama file di database
+                $anggota->foto = $encryptedName;
+            } else {
+                Log::error("File baru tidak ditemukan: " . $relativePath);
+            }
+        }
+
         // Update data personal
         $dataPersonal = $request->input('personal');
         $anggota->update([
+            'foto' => $encryptedName ?? $anggota->foto,
             'nik' => $dataPersonal['nomorAnggota'] ?? $anggota->nik,
             'nomor_ktp' => $dataPersonal['nomorKTP'] ?? $anggota->nomor_ktp,
             'nama_lengkap' => $dataPersonal['namaLengkap'] ?? $anggota->nama_lengkap,
@@ -1041,13 +1098,9 @@ class AnggotaController extends Controller
                 return $query->where('id_master_jamaah', $id_master_jamaah);
             })
             ->when($searchTerm, function ($query, $searchTerm) {
-                return $query->where('nama_lengkap', 'like', "%{$searchTerm}%");
+                return $query->whereRaw('LOWER(nama_lengkap) LIKE ?', ["%" . strtolower($searchTerm) . "%"]);
             })
             ->orderBy('id_master_jamaah', 'asc');
-
-        if (!empty($searchTerm)) {
-            $query->where('nama_lengkap', 'like', "%{$searchTerm}%");
-        }
 
         $anggota = $query->paginate($perPage, ['*'], 'page', $page);
 
@@ -1294,5 +1347,29 @@ class AnggotaController extends Controller
             ->get();
 
         return response()->json($result, 200);
+    }
+
+    public function uploadFoto(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'namaFoto' => 'required|string'
+        ]);
+
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
+            $filename = $request->namaFoto;
+
+            $path = $file->storeAs('uploads', $filename, 'public');
+
+            return response()->json([
+                'success' => true,
+                'filename' => $filename,
+                'path' => "/storage/$path", // image disimpan di storage\app\public\uploads
+                'url' => asset("storage/$path")
+            ]);
+        }
+
+        return response()->json(['success' => false, 'message' => 'Upload gagal'], 400);
     }
 }

@@ -12,6 +12,62 @@ class RoleController extends Controller
     /**
      * Display a listing of the resource.
      */
+    /**
+     * @OA\Get(
+     *     path="/api/role",
+     *     tags={"Role"},
+     *     summary="Ambil daftar role dengan permission",
+     *     description="Endpoint ini digunakan untuk mengambil data role dengan relasi permission, mendukung pencarian dan paginasi.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="perPage",
+     *         in="query",
+     *         required=false,
+     *         description="Jumlah data per halaman (default: 10)",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         required=false,
+     *         description="Filter berdasarkan nama role atau permission",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Berhasil mengambil daftar role",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Data Roles berhasil dimuat"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="data",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         @OA\Property(property="id", type="integer", example=1),
+     *                         @OA\Property(property="name_role", type="string", example="Super Admin"),
+     *                         @OA\Property(
+     *                             property="permissions",
+     *                             type="array",
+     *                             @OA\Items(
+     *                                 @OA\Property(property="id", type="integer", example=1),
+     *                                 @OA\Property(property="name_permission", type="string", example="lihat_data_anggota")
+     *                             )
+     *                         )
+     *                     )
+     *                 ),
+     *                 @OA\Property(property="total", type="integer", example=25),
+     *                 @OA\Property(property="per_page", type="integer", example=10),
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=3)
+     *             )
+     *         )
+     *     )
+     * )
+     */
+
     public function index(Request $request)
     {
         $perPage = $request->input('perPage', 10);
@@ -52,6 +108,55 @@ class RoleController extends Controller
         ]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/role",
+     *     tags={"Role"},
+     *     summary="Tambah role baru",
+     *     description="Membuat role baru beserta daftar permission-nya (opsional).",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name_role"},
+     *             @OA\Property(property="name_role", type="string", example="Admin Keuangan"),
+     *             @OA\Property(
+     *                 property="permissions",
+     *                 type="array",
+     *                 @OA\Items(type="integer", example=1)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Role berhasil ditambahkan",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Role berhasil ditambahkan!"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=5),
+     *                 @OA\Property(property="name_role", type="string", example="Admin Keuangan"),
+     *                 @OA\Property(
+     *                     property="permissions",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         @OA\Property(property="id", type="integer", example=1),
+     *                         @OA\Property(property="name_permission", type="string", example="lihat_iuran")
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validasi gagal",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="object")
+     *         )
+     *     )
+     * )
+     */
 
     public function store(Request $request)
     {
@@ -80,6 +185,63 @@ class RoleController extends Controller
             return response()->json(['error' => $e->errors()], 422);
         }
     }
+
+    /**
+     * @OA\Put(
+     *     path="/api/role/{id}",
+     *     tags={"Role"},
+     *     summary="Ubah role",
+     *     description="Memperbarui nama role dan daftar permission-nya.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID dari role yang akan diubah",
+     *         @OA\Schema(type="integer", example=5)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name_role"},
+     *             @OA\Property(property="name_role", type="string", example="Admin Pembinaan"),
+     *             @OA\Property(
+     *                 property="permissions",
+     *                 type="array",
+     *                 @OA\Items(type="integer", example=3)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Role berhasil diperbarui",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Role berhasil diperbarui!"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="id", type="integer", example=5),
+     *                 @OA\Property(property="name_role", type="string", example="Admin Pembinaan"),
+     *                 @OA\Property(
+     *                     property="permissions",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         @OA\Property(property="id", type="integer", example=3),
+     *                         @OA\Property(property="name_permission", type="string", example="input_program_pembinaan")
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validasi gagal",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="object")
+     *         )
+     *     )
+     * )
+     */
 
     public function update(Request $request, $id)
     {
@@ -114,6 +276,30 @@ class RoleController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    /**
+     * @OA\Delete(
+     *     path="/api/role/{id}",
+     *     tags={"Role"},
+     *     summary="Hapus role",
+     *     description="Menghapus role berdasarkan ID.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID dari role yang akan dihapus",
+     *         @OA\Schema(type="integer", example=5)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Role berhasil dihapus",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Role berhasil dihapus!")
+     *         )
+     *     )
+     * )
+     */
+
     public function destroy($id)
     {
         $role = Role::findOrFail($id);

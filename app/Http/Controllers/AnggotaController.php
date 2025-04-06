@@ -21,6 +21,71 @@ use App\Models\AnggotaOrganisasiModel;
 
 class AnggotaController extends Controller
 {
+    /**
+     * @OA\Get(
+     *     path="/api/anggota",
+     *     summary="Ambil daftar anggota dengan pagination dan pencarian nama",
+     *     tags={"Anggota"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="perPage",
+     *         in="query",
+     *         required=false,
+     *         description="Jumlah data per halaman (default: 10)",
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         required=false,
+     *         description="Nomor halaman (default: 1)",
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="searchTerm",
+     *         in="query",
+     *         required=false,
+     *         description="Pencarian berdasarkan nama lengkap anggota",
+     *         @OA\Schema(type="string", example="Ahmad")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Daftar anggota berhasil diambil",
+     *         @OA\JsonContent(
+     *             type="object",
+     *             @OA\Property(property="status", type="integer", example=200),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=5),
+     *                 @OA\Property(property="per_page", type="integer", example=10),
+     *                 @OA\Property(property="total", type="integer", example=45),
+     *                 @OA\Property(
+     *                     property="data",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         type="object",
+     *                         @OA\Property(property="id_anggota", type="integer", example=1),
+     *                         @OA\Property(property="nik", type="string", example="3201234567890001"),
+     *                         @OA\Property(property="nama_lengkap", type="string", example="Ahmad Fauzi"),
+     *                         @OA\Property(property="email", type="string", example="ahmad@example.com"),
+     *                         @OA\Property(property="tanggal_lahir", type="string", format="date", example="1990-01-01"),
+     *                         @OA\Property(property="nama_jamaah", type="string", example="Persis Banjaran"),
+     *                         @OA\Property(property="no_telp", type="string", example="082112345678"),
+     *                         @OA\Property(property="foto", type="string", example="foto.jpg"),
+     *                         @OA\Property(property="status_aktif", type="string", example="Aktif"),
+     *                         @OA\Property(property="keterangan", type="string", example="Ketua Jamaah"),
+     *                         @OA\Property(property="pendidikan", type="string", example="S1"),
+     *                         @OA\Property(property="nama_pekerjaan", type="string", example="PNS")
+     *                     )
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     */
+
     public function index(Request $request)
     {
         $perPage = $request->input('perPage', 10);
@@ -61,6 +126,104 @@ class AnggotaController extends Controller
 
 
     // Get single data
+    /**
+     * @OA\Get(
+     *     path="/api/anggota/{id}",
+     *     summary="Menampilkan detail lengkap anggota berdasarkan ID",
+     *     tags={"Anggota"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID anggota",
+     *         required=true,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Detail anggota ditemukan",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="personal", type="object",
+     *                 @OA\Property(property="nomorAnggota", type="string", example="3201234567890001"),
+     *                 @OA\Property(property="nomorKTP", type="string", example="3201234567890001"),
+     *                 @OA\Property(property="namaLengkap", type="string", example="Ahmad Fauzi"),
+     *                 @OA\Property(property="tempatLahir", type="string", example="Bandung"),
+     *                 @OA\Property(property="tanggalLahir", type="string", example="1990-01-01"),
+     *                 @OA\Property(property="statusMerital", type="string", example="Menikah"),
+     *                 @OA\Property(property="nomorTelepon", type="string", example="081234567890"),
+     *                 @OA\Property(property="nomorWA", type="string", example="081234567890"),
+     *                 @OA\Property(property="alamat", type="string", example="Jl. ABC No. 123"),
+     *                 @OA\Property(property="alamatTinggal", type="string", example="Jl. DEF No. 456"),
+     *                 @OA\Property(property="otonom", type="integer", example=2),
+     *                 @OA\Property(property="namaOtonom", type="string", example="Pemuda"),
+     *                 @OA\Property(property="jamaah", type="integer", example=3),
+     *                 @OA\Property(property="namaJamaah", type="string", example="Persis Banjaran"),
+     *                 @OA\Property(property="statusAktif", type="integer", example=1),
+     *                 @OA\Property(property="namaStatusAktif", type="string", example="Aktif"),
+     *                 @OA\Property(property="tahunMasuk", type="string", example="2015"),
+     *                 @OA\Property(property="masaAktif", type="string", example="10 Tahun"),
+     *                 @OA\Property(property="kajianRutin", type="string", example="Ya"),
+     *                 @OA\Property(property="tahunHaji", type="string", example="2019"),
+     *                 @OA\Property(property="keterangan", type="string", example="Pengurus Cabang")
+     *             ),
+     *             @OA\Property(property="family", type="object",
+     *                 @OA\Property(property="jumlahTanggungan", type="integer", example=3),
+     *                 @OA\Property(property="namaIstri", type="string", example="Siti Aminah"),
+     *                 @OA\Property(property="anggotaPersistri", type="string", example="Ya"),
+     *                 @OA\Property(property="statusKepemilikanRumah", type="string", example="Pribadi"),
+     *                 @OA\Property(property="jumlaSeluruhAnak", type="integer", example=2),
+     *                 @OA\Property(property="jumlaAnakPemuda", type="integer", example=1),
+     *                 @OA\Property(property="jumlaAnakPemudi", type="integer", example=1)
+     *             ),
+     *             @OA\Property(property="education", type="object",
+     *                 @OA\Property(property="tingkat", type="integer", example=4),
+     *                 @OA\Property(property="namaTingkat", type="string", example="S1"),
+     *                 @OA\Property(property="namaSekolah", type="string", example="Universitas ABC"),
+     *                 @OA\Property(property="jurusan", type="string", example="Teknik Informatika"),
+     *                 @OA\Property(property="tahunMasuk", type="string", example="2010"),
+     *                 @OA\Property(property="tahunKeluar", type="string", example="2014"),
+     *                 @OA\Property(property="jenisPendidikan", type="string", example="Formal")
+     *             ),
+     *             @OA\Property(property="work", type="object",
+     *                 @OA\Property(property="pekerjaan", type="integer", example=5),
+     *                 @OA\Property(property="namaPekerjaan", type="string", example="Guru"),
+     *                 @OA\Property(property="pekerjaanLainnya", type="string", example="Dosen"),
+     *                 @OA\Property(property="namaInstansi", type="string", example="Universitas XYZ"),
+     *                 @OA\Property(property="deskripsiPekerjaan", type="string", example="Mengajar mahasiswa"),
+     *                 @OA\Property(property="pendapatan", type="string", example="Rp5.000.000")
+     *             ),
+     *             @OA\Property(property="skill", type="object",
+     *                 @OA\Property(property="keterampilan", type="integer", example=3),
+     *                 @OA\Property(property="namaKeterampilan", type="string", example="Desain Grafis"),
+     *                 @OA\Property(property="keterampilanLainnya", type="string", example="Animasi"),
+     *                 @OA\Property(property="deskripsiKeterampilan", type="string", example="Menguasai Adobe Illustrator")
+     *             ),
+     *             @OA\Property(property="interest", type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="minat", type="string", example="Olahraga"),
+     *                     @OA\Property(property="minatLainnya", type="string", example="Basket")
+     *                 )
+     *             ),
+     *             @OA\Property(property="organization", type="object",
+     *                 @OA\Property(property="keterlibatanOrganisasi", type="string", example="Aktif"),
+     *                 @OA\Property(property="namaOrganisasi", type="string", example="Pemuda Persis")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="ID tidak valid",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Invalid ID")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Data anggota tidak ditemukan"
+     *     )
+     * )
+     */
+
     public function show($id)
     {
         // Validate that the ID is a valid integer
@@ -161,6 +324,89 @@ class AnggotaController extends Controller
     }
 
 
+    /**
+     * @OA\Post(
+     *     path="/api/anggota",
+     *     summary="Menyimpan data anggota beserta relasi lengkap",
+     *     tags={"Anggota"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="personal", type="object",
+     *                 @OA\Property(property="nomorAnggota", type="string"),
+     *                 @OA\Property(property="nomorKTP", type="string"),
+     *                 @OA\Property(property="namaLengkap", type="string"),
+     *                 @OA\Property(property="tempatLahir", type="string"),
+     *                 @OA\Property(property="tanggalLahir", type="string", format="date"),
+     *                 @OA\Property(property="statusMerital", type="string"),
+     *                 @OA\Property(property="nomorTelepon", type="string"),
+     *                 @OA\Property(property="nomorWA", type="string"),
+     *                 @OA\Property(property="alamat", type="string"),
+     *                 @OA\Property(property="alamatTinggal", type="string"),
+     *                 @OA\Property(property="otonom", type="integer"),
+     *                 @OA\Property(property="jamaah", type="integer"),
+     *                 @OA\Property(property="statusAktif", type="string"),
+     *                 @OA\Property(property="tahunMasuk", type="integer"),
+     *                 @OA\Property(property="masaAktif", type="integer"),
+     *                 @OA\Property(property="kajianRutin", type="string"),
+     *                 @OA\Property(property="tahunHaji", type="integer"),
+     *                 @OA\Property(property="keterangan", type="string"),
+     *             ),
+     *             @OA\Property(property="family", type="object",
+     *                 @OA\Property(property="jumlahTanggungan", type="integer"),
+     *                 @OA\Property(property="namaIstri", type="string"),
+     *                 @OA\Property(property="anggotaPersistri", type="boolean"),
+     *                 @OA\Property(property="statusKepemilikanRumah", type="string"),
+     *                 @OA\Property(property="jumlaSeluruhAnak", type="integer"),
+     *                 @OA\Property(property="jumlaAnakPemuda", type="integer"),
+     *                 @OA\Property(property="jumlaAnakPemudi", type="integer"),
+     *             ),
+     *             @OA\Property(property="education", type="object",
+     *                 @OA\Property(property="tingkat", type="integer"),
+     *                 @OA\Property(property="namaSekolah", type="string"),
+     *                 @OA\Property(property="jurusan", type="string"),
+     *                 @OA\Property(property="tahunMasuk", type="integer"),
+     *                 @OA\Property(property="tahunKeluar", type="integer"),
+     *                 @OA\Property(property="jenisPendidikan", type="string"),
+     *             ),
+     *             @OA\Property(property="work", type="object",
+     *                 @OA\Property(property="pekerjaan", type="integer"),
+     *                 @OA\Property(property="pekerjaanLainnya", type="string"),
+     *                 @OA\Property(property="namaInstansi", type="string"),
+     *                 @OA\Property(property="deskripsiPekerjaan", type="string"),
+     *                 @OA\Property(property="pendapatan", type="integer"),
+     *             ),
+     *             @OA\Property(property="skill", type="object",
+     *                 @OA\Property(property="keterampilan", type="integer"),
+     *                 @OA\Property(property="keterampilanLainnya", type="string"),
+     *                 @OA\Property(property="deskripsiKeterampilan", type="string"),
+     *             ),
+     *             @OA\Property(property="interest", type="array",
+     *                 @OA\Items(type="object",
+     *                     @OA\Property(property="minat", type="string"),
+     *                     @OA\Property(property="minatLainnya", type="string"),
+     *                 )
+     *             ),
+     *             @OA\Property(property="organization", type="object",
+     *                 @OA\Property(property="keterlibatanOrganisasi", type="string"),
+     *                 @OA\Property(property="namaOrganisasi", type="string"),
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="Data berhasil disimpan",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Data berhasil disimpan")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error"
+     *     )
+     * )
+     */
 
     // Create data
     public function store(Request $request)
@@ -252,6 +498,104 @@ class AnggotaController extends Controller
     }
 
     // Update data
+    /**
+     * @OA\Put(
+     *     path="/api/anggota/{id}",
+     *     summary="Update data anggota lengkap (personal, keluarga, pendidikan, pekerjaan, keterampilan, minat, organisasi)",
+     *     tags={"Anggota"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID anggota yang ingin diperbarui",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="personal", type="object",
+     *                 @OA\Property(property="nomorAnggota", type="string"),
+     *                 @OA\Property(property="nomorKTP", type="string"),
+     *                 @OA\Property(property="namaLengkap", type="string"),
+     *                 @OA\Property(property="tempatLahir", type="string"),
+     *                 @OA\Property(property="tanggalLahir", type="string", format="date"),
+     *                 @OA\Property(property="statusMerital", type="string"),
+     *                 @OA\Property(property="nomorTelepon", type="string"),
+     *                 @OA\Property(property="nomorWA", type="string"),
+     *                 @OA\Property(property="alamat", type="string"),
+     *                 @OA\Property(property="alamatTinggal", type="string"),
+     *                 @OA\Property(property="otonom", type="integer"),
+     *                 @OA\Property(property="jamaah", type="integer"),
+     *                 @OA\Property(property="statusAktif", type="boolean"),
+     *                 @OA\Property(property="tahunMasuk", type="integer"),
+     *                 @OA\Property(property="masaAktif", type="string"),
+     *                 @OA\Property(property="kajianRutin", type="string"),
+     *                 @OA\Property(property="tahunHaji", type="integer"),
+     *                 @OA\Property(property="keterangan", type="string")
+     *             ),
+     *             @OA\Property(property="family", type="object",
+     *                 @OA\Property(property="jumlahTanggungan", type="integer"),
+     *                 @OA\Property(property="namaIstri", type="string"),
+     *                 @OA\Property(property="anggotaPersistri", type="string"),
+     *                 @OA\Property(property="statusKepemilikanRumah", type="string"),
+     *                 @OA\Property(property="jumlaSeluruhAnak", type="integer"),
+     *                 @OA\Property(property="jumlaAnakPemuda", type="integer"),
+     *                 @OA\Property(property="jumlaAnakPemudi", type="integer")
+     *             ),
+     *             @OA\Property(property="education", type="object",
+     *                 @OA\Property(property="tingkat", type="integer"),
+     *                 @OA\Property(property="namaSekolah", type="string"),
+     *                 @OA\Property(property="jurusan", type="string"),
+     *                 @OA\Property(property="tahunMasuk", type="integer"),
+     *                 @OA\Property(property="tahunKeluar", type="integer"),
+     *                 @OA\Property(property="jenisPendidikan", type="string")
+     *             ),
+     *             @OA\Property(property="work", type="object",
+     *                 @OA\Property(property="pekerjaan", type="integer"),
+     *                 @OA\Property(property="pekerjaanLainnya", type="string"),
+     *                 @OA\Property(property="namaInstansi", type="string"),
+     *                 @OA\Property(property="deskripsiPekerjaan", type="string"),
+     *                 @OA\Property(property="pendapatan", type="integer")
+     *             ),
+     *             @OA\Property(property="skill", type="object",
+     *                 @OA\Property(property="keterampilan", type="integer"),
+     *                 @OA\Property(property="keterampilanLainnya", type="string"),
+     *                 @OA\Property(property="deskripsiKeterampilan", type="string")
+     *             ),
+     *             @OA\Property(
+     *                 property="interest",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="minat", type="string"),
+     *                     @OA\Property(property="minatLainnya", type="string")
+     *                 )
+     *             ),
+     *             @OA\Property(property="organization", type="object",
+     *                 @OA\Property(property="keterlibatanOrganisasi", type="string"),
+     *                 @OA\Property(property="namaOrganisasi", type="string")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Berhasil memperbarui data anggota",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Data berhasil diperbarui")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Data anggota tidak ditemukan"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validasi gagal"
+     *     )
+     * )
+     */
+
     public function update(Request $request, $id)
     {
         Log::info('Data request:', $request->all());
@@ -360,6 +704,40 @@ class AnggotaController extends Controller
     }
 
     // Delete data
+    /**
+     * @OA\Delete(
+     *     path="/api/anggota/{id}",
+     *     summary="Hapus data anggota beserta semua data relasinya",
+     *     tags={"Anggota"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         description="ID anggota yang ingin dihapus",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Data berhasil dihapus",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Data berhasil dihapus")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="Data anggota tidak ditemukan"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Terjadi kesalahan saat menghapus data",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Terjadi kesalahan saat menghapus data")
+     *         )
+     *     )
+     * )
+     */
+
     public function destroy($id)
     {
         try {
@@ -387,6 +765,34 @@ class AnggotaController extends Controller
         }
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/data_monografi",
+     *     summary="Menampilkan statistik monografi anggota (Persis, Persistri, Pemuda, Pemudi)",
+     *     tags={"Anggota"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Statistik berhasil diambil",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="integer", example=200),
+     *             @OA\Property(
+     *                 property="data_monografi",
+     *                 type="object",
+     *                 @OA\Property(property="jum_persis", type="integer", example=120),
+     *                 @OA\Property(property="jum_persistri", type="integer", example=90),
+     *                 @OA\Property(property="jum_pemuda", type="integer", example=70),
+     *                 @OA\Property(property="jum_pemudi", type="integer", example=65)
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Terjadi kesalahan saat mengambil data"
+     *     )
+     * )
+     */
+
     public function statistik()
     {
         $jumlahPersis = AnggotaModel::where('status_aktif', 1)
@@ -407,6 +813,50 @@ class AnggotaController extends Controller
             'data_monografi' => $dataMonografi
         ], 200);
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/data_chart",
+     *     summary="Menampilkan data statistik untuk kebutuhan chart (anggota, pendidikan, pekerjaan, keterampilan, mubaligh)",
+     *     tags={"Anggota"},
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Data statistik chart berhasil diambil",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="anggota", type="array", @OA\Items(
+     *                 @OA\Property(property="id_master_jamaah", type="integer", example=1),
+     *                 @OA\Property(property="nama_jamaah", type="string", example="Banjaran"),
+     *                 @OA\Property(property="jum_persis", type="integer", example=30),
+     *                 @OA\Property(property="jum_persistri", type="integer", example=20),
+     *                 @OA\Property(property="jum_pemuda", type="integer", example=15),
+     *                 @OA\Property(property="jum_pemudi", type="integer", example=10)
+     *             )),
+     *             @OA\Property(property="pendidikan", type="array", @OA\Items(
+     *                 @OA\Property(property="tingkat_pendidikan", type="string", example="S1"),
+     *                 @OA\Property(property="jumlah_anggota", type="integer", example=50)
+     *             )),
+     *             @OA\Property(property="pekerjaan", type="array", @OA\Items(
+     *                 @OA\Property(property="nama_pekerjaan", type="string", example="Guru"),
+     *                 @OA\Property(property="jumlah_anggota", type="integer", example=25)
+     *             )),
+     *             @OA\Property(property="keterampilan", type="array", @OA\Items(
+     *                 @OA\Property(property="nama_keterampilan", type="string", example="Menjahit"),
+     *                 @OA\Property(property="jumlah_anggota", type="integer", example=10)
+     *             )),
+     *             @OA\Property(property="mubaligh", type="array", @OA\Items(
+     *                 @OA\Property(property="id_master_jamaah", type="integer", example=1),
+     *                 @OA\Property(property="nama_jamaah", type="string", example="Banjaran"),
+     *                 @OA\Property(property="jumlah_anggota", type="integer", example=5)
+     *             ))
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Terjadi kesalahan saat mengambil data chart"
+     *     )
+     * )
+     */
 
     public function chart()
     {
@@ -495,6 +945,38 @@ class AnggotaController extends Controller
         ], 200);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/data_choice_pribadi",
+     *     tags={"Anggota"},
+     *     security={{"bearerAuth":{}}},
+     *     summary="Ambil data pilihan Jamaah & Otonom",
+     *     description="Endpoint ini digunakan untuk mengambil pilihan jamaah dan otonom untuk form data pribadi anggota.",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Berhasil mengambil data pilihan",
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="jamaah",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="id_master_jamaah", type="integer", example=1),
+     *                     @OA\Property(property="nama_jamaah", type="string", example="Banjaran")
+     *                 )
+     *             ),
+     *             @OA\Property(
+     *                 property="otonom",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="id_otonom", type="integer", example=2),
+     *                     @OA\Property(property="nama_otonom", type="string", example="Pemuda")
+     *                 )
+     *             )
+     *         )
+     *     )
+     * )
+     */
+
     public function getChoiceDataPribadi()
     {
         $dataJamaah = MasterJamaahModel::select(
@@ -512,6 +994,37 @@ class AnggotaController extends Controller
             'otonom' => $dataOtonom
         ], 200);
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/anggota/by-jamaah/{id_master_jamaah}",
+     *     tags={"Anggota"},
+     *     summary="Ambil data anggota berdasarkan ID Jamaah",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id_master_jamaah",
+     *         in="path",
+     *         required=false,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="perPage",
+     *         in="query",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="searchTerm",
+     *         in="query",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(response=200, description="Data anggota berhasil diambil")
+     * )
+     */
 
     public function indexByJamaah(Request $request, $id_master_jamaah = null)
     {
@@ -543,6 +1056,20 @@ class AnggotaController extends Controller
 
 
 
+    /**
+     * @OA\Get(
+     *     path="/api/anggota/all",
+     *     tags={"Anggota"},
+     *     summary="Ambil semua data anggota (untuk dropdown/select)",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="searchTerm",
+     *         in="query",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(response=200, description="Data anggota berhasil diambil")
+     * )
+     */
 
     public function selectAll(Request $request)
     {
@@ -570,6 +1097,17 @@ class AnggotaController extends Controller
             'data' => $anggota,
         ], 200);
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/data_choice_pendidikan",
+     *     tags={"Anggota"},
+     *     summary="Ambil pilihan data pendidikan",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Data pendidikan berhasil diambil")
+     * )
+     */
+
     public function getChoiceDataPendidikan()
     {
         $dataPendidikan = TingkatPendidikanModel::select(
@@ -581,6 +1119,16 @@ class AnggotaController extends Controller
             'pendidikan' => $dataPendidikan,
         ], 200);
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/data_choice_pekerjaan",
+     *     tags={"Anggota"},
+     *     summary="Ambil pilihan data pekerjaan",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Data pekerjaan berhasil diambil")
+     * )
+     */
 
     public function getChoiceDataPekerjaan()
     {
@@ -594,6 +1142,16 @@ class AnggotaController extends Controller
         ], 200);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/data_choice_keterampilan",
+     *     tags={"Anggota"},
+     *     summary="Ambil pilihan data keterampilan",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Data keterampilan berhasil diambil")
+     * )
+     */
+
     public function getChoiceDataKeterampilan()
     {
         $dataKeterampilan = MasterKeterampilanModel::select(
@@ -605,6 +1163,17 @@ class AnggotaController extends Controller
             'keterampilan' => $dataKeterampilan
         ], 200);
     }
+
+
+    /**
+     * @OA\Get(
+     *     path="/api/data_choice_minat",
+     *     tags={"Anggota"},
+     *     summary="Ambil pilihan data minat",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Data minat berhasil diambil")
+     * )
+     */
 
     public function getChoiceDataMinat()
     {
@@ -618,6 +1187,16 @@ class AnggotaController extends Controller
         ], 200);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/statistik/maps",
+     *     tags={"Anggota"},
+     *     summary="Ambil data koordinat jamaah untuk pemetaan",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Data lokasi berhasil diambil")
+     * )
+     */
+
     public function mapsMonographic()
     {
         $anggota = MasterJamaahModel::select('nama_jamaah', 'lokasi_lat', 'lokasi_long')
@@ -628,6 +1207,16 @@ class AnggotaController extends Controller
 
         return response()->json(['status' => 200, 'data' => $anggota], 200);
     }
+
+    /**
+     * @OA\Get(
+     *     path="/api/statistik/advanced/pilihan",
+     *     tags={"Anggota"},
+     *     summary="Ambil pilihan data untuk statistik lanjutan",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Pilihan data statistik lanjutan berhasil diambil")
+     * )
+     */
 
     public function pilihanDataAdvancedStatistic()
     {
@@ -652,8 +1241,25 @@ class AnggotaController extends Controller
             'pekerjaan' => $dataPekerjaan,
             'keahlian' => $dataKeahlian
         ], 200);
-
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/statistik/advanced",
+     *     tags={"Anggota"},
+     *     summary="Ambil statistik lanjutan berdasarkan filter",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="pendidikan", type="integer", example=1),
+     *             @OA\Property(property="pekerjaan", type="integer", example=2),
+     *             @OA\Property(property="keahlian", type="integer", example=3)
+     *         )
+     *     ),
+     *     @OA\Response(response=200, description="Statistik lanjutan berhasil diambil")
+     * )
+     */
 
     public function advancedStatistic(Request $request)
     {

@@ -585,21 +585,14 @@ class AnggotaController extends Controller
                 return $query->where('id_master_jamaah', $id_master_jamaah);
             })
             ->when($searchTerm, function ($query, $searchTerm) {
-                return $query->where('nama_lengkap', 'like', "%{$searchTerm}%");
+                return $query->whereRaw('LOWER(nama_lengkap) LIKE ?', ["%".strtolower($searchTerm)."%"]);
             })
             ->orderBy('id_master_jamaah', 'asc');
-
-        if (!empty($searchTerm)) {
-            $query->where('nama_lengkap', 'like', "%{$searchTerm}%");
-        }
 
         $anggota = $query->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json(['status' => 200, 'data' => $anggota], 200);
     }
-
-
-
 
     public function selectAll(Request $request)
     {

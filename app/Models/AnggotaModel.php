@@ -61,6 +61,11 @@ class AnggotaModel extends Model
         return $this->hasOne(AnggotaKeterampilanModel::class, 'id_anggota', 'id_anggota');
     }
 
+    public function anggota_minat()
+    {
+        return $this->hasOne(AnggotaMinatModel::class, 'id_anggota', 'id_anggota');
+    }
+
     public function anggota_mutasi()
     {
         return $this->hasOne(AnggotaMutasiModel::class, 'id_anggota', 'id_anggota');

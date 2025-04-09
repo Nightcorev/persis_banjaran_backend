@@ -95,3 +95,5 @@ Route::get('/get_anggota/{id}', [AnggotaController::class, 'show']);
 Route::post('/add_anggota', [AnggotaController::class, 'store']);
 Route::put('/edit_anggota/{id}', [AnggotaController::class, 'update']);
 Route::delete('/delete_anggota/{id}', [AnggotaController::class, 'destroy']);
+
+Route::get('/advanced_statistic', [AnggotaController::class, 'advancedStatistic']);

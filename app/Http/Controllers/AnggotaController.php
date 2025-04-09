@@ -714,27 +714,53 @@ class AnggotaController extends Controller
 
     public function advancedStatistic(Request $request)
     {
-        $pendidikan = $request->input('pendidikan');
-        $pekerjaan = $request->input('pekerjaan');
-        $keahlian = $request->input('keahlian');
-
         $query = AnggotaModel::query();
 
-        if (!empty($pendidikan)) {
-            $query->whereHas('anggota_pendidikan', function ($q) use ($pendidikan) {
-                $q->where('id_tingkat_pendidikan', $pendidikan);
+        if ($request->filled('pendidikan')) {
+            $query->whereHas('anggota_pendidikan', function ($q) use ($request) {
+                $q->where('id_tingkat_pendidikan', $request->pendidikan);
             });
         }
 
-        if (!empty($pekerjaan)) {
-            $query->whereHas('anggota_pekerjaan', function ($q) use ($pekerjaan) {
-                $q->where('id_master_pekerjaan', $pekerjaan);
+        if ($request->filled('pekerjaan')) {
+            $query->whereHas('anggota_pekerjaan', function ($q) use ($request) {
+                $q->where('id_master_pekerjaan', $request->pekerjaan);
             });
         }
 
-        if (!empty($keahlian)) {
-            $query->whereHas('anggota_keterampilan', function ($q) use ($keahlian) {
-                $q->where('id_minat', $keahlian);
+        if ($request->filled('keterampilan')) {
+            $query->whereHas('anggota_keterampilan', function ($q) use ($request) {
+                $q->where('id_master_keterampilan', $request->keterampilan);
+            });
+        }
+
+        if ($request->filled('minat')) {
+            $query->whereHas('anggota_minat', function ($q) use ($request) {
+                $q->where('id_master_minat', $request->minat);
+            });
+        }
+
+        if ($request->filled('master_otonom')) {
+            $query->where('id_otonom', $request->otonom);
+        }
+
+        if ($request->filled('status_aktif')) {
+            $query->where('status_aktif', $request->status_aktif);
+        }
+
+        if ($request->filled('status_merital')) {
+            $query->where('status_merital', $request->status_merital);
+        }
+
+        if ($request->filled('tanggungan')) {
+            $query->whereHas('anggota_keluarga', function ($q) use ($request) {
+                $q->where('jumlah_tanggungan', $request->tanggungan);
+            });
+        }
+
+        if ($request->filled('pendapatan')) {
+            $query->whereHas('anggota_pekerjaan', function ($q) use ($request) {
+                $q->where('pendapatan', $request->pendapatan);
             });
         }
 
@@ -746,6 +772,8 @@ class AnggotaController extends Controller
 
         return response()->json($result, 200);
     }
+
+
 
     public function uploadFoto(Request $request)
     {

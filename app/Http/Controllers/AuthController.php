@@ -9,8 +9,47 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
 
+
 class AuthController extends Controller
 {
+    /**
+     * @OA\Post(
+     *     path="/api/login",
+     *     tags={"Authentication"},
+     *     summary="Login pengguna",
+     *     description="Login user dan mengembalikan token yang bisa digunakan untuk mengakses API lainnya.",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"username","password","device_info","ip_address"},
+     *             @OA\Property(property="username", type="string", example="admin"),
+     *             @OA\Property(property="password", type="string", example="admin123"),
+     *             @OA\Property(property="device_info", type="string", example="Chrome on Windows"),
+     *             @OA\Property(property="ip_address", type="string", example="192.168.1.10")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Login berhasil",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Login berhasil"),
+     *             @OA\Property(property="token", type="string"),
+     *             @OA\Property(property="token_type", type="string", example="Bearer"),
+     *             @OA\Property(property="expires_at", type="string", format="date-time"),
+     *             @OA\Property(property="role", type="string", example="Super Admin"),
+     *             @OA\Property(
+     *                 property="user", type="object",
+     *                 @OA\Property(property="id", type="integer"),
+     *                 @OA\Property(property="name_user", type="string"),
+     *                 @OA\Property(property="username", type="string"),
+     *                 @OA\Property(property="role", type="string")
+     *             ),
+     *             @OA\Property(property="permissions", type="array", @OA\Items(type="string"))
+     *         )
+     *     ),
+     *     @OA\Response(response=401, description="Username atau password salah")
+     * )
+     */
     public function login(Request $request)
     {
         // 🔹 Validasi Input
@@ -75,6 +114,23 @@ class AuthController extends Controller
         ]);
     }
 
+    /**
+     * @OA\Post(
+     *     path="/api/logout",
+     *     tags={"Authentication"},
+     *     summary="Logout pengguna",
+     *     description="Logout pengguna dan menghapus token dari database.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Logout successful",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Logout successful")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Invalid token or token missing")
+     * )
+     */
     public function logout(Request $request)
     {
         $token = $request->bearerToken();

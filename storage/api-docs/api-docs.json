@@ -1,40 +1,2894 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Judul API Anda",
-        "description": "Deskripsi API Anda",
-        "contact": {
-            "email": "email@example.com"
-        },
-        "license": {
-            "name": "MIT",
-            "url": "https://opensource.org/licenses/MIT"
-        },
+        "title": "API Dokumentasi Sistem Manajemen Jamiyah",
+        "description": "Dokumentasi Swagger untuk semua endpoint API",
         "version": "1.0"
     },
     "paths": {
+        "/api/anggota": {
+            "get": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Ambil daftar anggota dengan pagination dan pencarian nama",
+                "operationId": "dbaecd74405239d6c15d4de2408e6857",
+                "parameters": [
+                    {
+                        "name": "perPage",
+                        "in": "query",
+                        "description": "Jumlah data per halaman (default: 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Nomor halaman (default: 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "searchTerm",
+                        "in": "query",
+                        "description": "Pencarian berdasarkan nama lengkap anggota",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Ahmad"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Daftar anggota berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 45
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id_anggota": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "nik": {
+                                                                "type": "string",
+                                                                "example": "3201234567890001"
+                                                            },
+                                                            "nama_lengkap": {
+                                                                "type": "string",
+                                                                "example": "Ahmad Fauzi"
+                                                            },
+                                                            "email": {
+                                                                "type": "string",
+                                                                "example": "ahmad@example.com"
+                                                            },
+                                                            "tanggal_lahir": {
+                                                                "type": "string",
+                                                                "format": "date",
+                                                                "example": "1990-01-01"
+                                                            },
+                                                            "nama_jamaah": {
+                                                                "type": "string",
+                                                                "example": "Persis Banjaran"
+                                                            },
+                                                            "no_telp": {
+                                                                "type": "string",
+                                                                "example": "082112345678"
+                                                            },
+                                                            "foto": {
+                                                                "type": "string",
+                                                                "example": "foto.jpg"
+                                                            },
+                                                            "status_aktif": {
+                                                                "type": "string",
+                                                                "example": "Aktif"
+                                                            },
+                                                            "keterangan": {
+                                                                "type": "string",
+                                                                "example": "Ketua Jamaah"
+                                                            },
+                                                            "pendidikan": {
+                                                                "type": "string",
+                                                                "example": "S1"
+                                                            },
+                                                            "nama_pekerjaan": {
+                                                                "type": "string",
+                                                                "example": "PNS"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Menyimpan data anggota beserta relasi lengkap",
+                "operationId": "a478c2447322bda12fb1f22483363e3b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "personal": {
+                                        "properties": {
+                                            "nomorAnggota": {
+                                                "type": "string"
+                                            },
+                                            "nomorKTP": {
+                                                "type": "string"
+                                            },
+                                            "namaLengkap": {
+                                                "type": "string"
+                                            },
+                                            "tempatLahir": {
+                                                "type": "string"
+                                            },
+                                            "tanggalLahir": {
+                                                "type": "string",
+                                                "format": "date"
+                                            },
+                                            "statusMerital": {
+                                                "type": "string"
+                                            },
+                                            "nomorTelepon": {
+                                                "type": "string"
+                                            },
+                                            "nomorWA": {
+                                                "type": "string"
+                                            },
+                                            "alamat": {
+                                                "type": "string"
+                                            },
+                                            "alamatTinggal": {
+                                                "type": "string"
+                                            },
+                                            "otonom": {
+                                                "type": "integer"
+                                            },
+                                            "jamaah": {
+                                                "type": "integer"
+                                            },
+                                            "statusAktif": {
+                                                "type": "string"
+                                            },
+                                            "tahunMasuk": {
+                                                "type": "integer"
+                                            },
+                                            "masaAktif": {
+                                                "type": "integer"
+                                            },
+                                            "kajianRutin": {
+                                                "type": "string"
+                                            },
+                                            "tahunHaji": {
+                                                "type": "integer"
+                                            },
+                                            "keterangan": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "family": {
+                                        "properties": {
+                                            "jumlahTanggungan": {
+                                                "type": "integer"
+                                            },
+                                            "namaIstri": {
+                                                "type": "string"
+                                            },
+                                            "anggotaPersistri": {
+                                                "type": "boolean"
+                                            },
+                                            "statusKepemilikanRumah": {
+                                                "type": "string"
+                                            },
+                                            "jumlaSeluruhAnak": {
+                                                "type": "integer"
+                                            },
+                                            "jumlaAnakPemuda": {
+                                                "type": "integer"
+                                            },
+                                            "jumlaAnakPemudi": {
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "education": {
+                                        "properties": {
+                                            "tingkat": {
+                                                "type": "integer"
+                                            },
+                                            "namaSekolah": {
+                                                "type": "string"
+                                            },
+                                            "jurusan": {
+                                                "type": "string"
+                                            },
+                                            "tahunMasuk": {
+                                                "type": "integer"
+                                            },
+                                            "tahunKeluar": {
+                                                "type": "integer"
+                                            },
+                                            "jenisPendidikan": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "work": {
+                                        "properties": {
+                                            "pekerjaan": {
+                                                "type": "integer"
+                                            },
+                                            "pekerjaanLainnya": {
+                                                "type": "string"
+                                            },
+                                            "namaInstansi": {
+                                                "type": "string"
+                                            },
+                                            "deskripsiPekerjaan": {
+                                                "type": "string"
+                                            },
+                                            "pendapatan": {
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "skill": {
+                                        "properties": {
+                                            "keterampilan": {
+                                                "type": "integer"
+                                            },
+                                            "keterampilanLainnya": {
+                                                "type": "string"
+                                            },
+                                            "deskripsiKeterampilan": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "interest": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "minat": {
+                                                    "type": "string"
+                                                },
+                                                "minatLainnya": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "organization": {
+                                        "properties": {
+                                            "keterlibatanOrganisasi": {
+                                                "type": "string"
+                                            },
+                                            "namaOrganisasi": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Data berhasil disimpan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data berhasil disimpan"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/anggota/{id}": {
+            "get": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Menampilkan detail lengkap anggota berdasarkan ID",
+                "operationId": "5d88c118b770edaff60f45bdaf6b2a2d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID anggota",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail anggota ditemukan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "personal": {
+                                            "properties": {
+                                                "nomorAnggota": {
+                                                    "type": "string",
+                                                    "example": "3201234567890001"
+                                                },
+                                                "nomorKTP": {
+                                                    "type": "string",
+                                                    "example": "3201234567890001"
+                                                },
+                                                "namaLengkap": {
+                                                    "type": "string",
+                                                    "example": "Ahmad Fauzi"
+                                                },
+                                                "tempatLahir": {
+                                                    "type": "string",
+                                                    "example": "Bandung"
+                                                },
+                                                "tanggalLahir": {
+                                                    "type": "string",
+                                                    "example": "1990-01-01"
+                                                },
+                                                "statusMerital": {
+                                                    "type": "string",
+                                                    "example": "Menikah"
+                                                },
+                                                "nomorTelepon": {
+                                                    "type": "string",
+                                                    "example": "081234567890"
+                                                },
+                                                "nomorWA": {
+                                                    "type": "string",
+                                                    "example": "081234567890"
+                                                },
+                                                "alamat": {
+                                                    "type": "string",
+                                                    "example": "Jl. ABC No. 123"
+                                                },
+                                                "alamatTinggal": {
+                                                    "type": "string",
+                                                    "example": "Jl. DEF No. 456"
+                                                },
+                                                "otonom": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "namaOtonom": {
+                                                    "type": "string",
+                                                    "example": "Pemuda"
+                                                },
+                                                "jamaah": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "namaJamaah": {
+                                                    "type": "string",
+                                                    "example": "Persis Banjaran"
+                                                },
+                                                "statusAktif": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "namaStatusAktif": {
+                                                    "type": "string",
+                                                    "example": "Aktif"
+                                                },
+                                                "tahunMasuk": {
+                                                    "type": "string",
+                                                    "example": "2015"
+                                                },
+                                                "masaAktif": {
+                                                    "type": "string",
+                                                    "example": "10 Tahun"
+                                                },
+                                                "kajianRutin": {
+                                                    "type": "string",
+                                                    "example": "Ya"
+                                                },
+                                                "tahunHaji": {
+                                                    "type": "string",
+                                                    "example": "2019"
+                                                },
+                                                "keterangan": {
+                                                    "type": "string",
+                                                    "example": "Pengurus Cabang"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "family": {
+                                            "properties": {
+                                                "jumlahTanggungan": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "namaIstri": {
+                                                    "type": "string",
+                                                    "example": "Siti Aminah"
+                                                },
+                                                "anggotaPersistri": {
+                                                    "type": "string",
+                                                    "example": "Ya"
+                                                },
+                                                "statusKepemilikanRumah": {
+                                                    "type": "string",
+                                                    "example": "Pribadi"
+                                                },
+                                                "jumlaSeluruhAnak": {
+                                                    "type": "integer",
+                                                    "example": 2
+                                                },
+                                                "jumlaAnakPemuda": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "jumlaAnakPemudi": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "education": {
+                                            "properties": {
+                                                "tingkat": {
+                                                    "type": "integer",
+                                                    "example": 4
+                                                },
+                                                "namaTingkat": {
+                                                    "type": "string",
+                                                    "example": "S1"
+                                                },
+                                                "namaSekolah": {
+                                                    "type": "string",
+                                                    "example": "Universitas ABC"
+                                                },
+                                                "jurusan": {
+                                                    "type": "string",
+                                                    "example": "Teknik Informatika"
+                                                },
+                                                "tahunMasuk": {
+                                                    "type": "string",
+                                                    "example": "2010"
+                                                },
+                                                "tahunKeluar": {
+                                                    "type": "string",
+                                                    "example": "2014"
+                                                },
+                                                "jenisPendidikan": {
+                                                    "type": "string",
+                                                    "example": "Formal"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "work": {
+                                            "properties": {
+                                                "pekerjaan": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "namaPekerjaan": {
+                                                    "type": "string",
+                                                    "example": "Guru"
+                                                },
+                                                "pekerjaanLainnya": {
+                                                    "type": "string",
+                                                    "example": "Dosen"
+                                                },
+                                                "namaInstansi": {
+                                                    "type": "string",
+                                                    "example": "Universitas XYZ"
+                                                },
+                                                "deskripsiPekerjaan": {
+                                                    "type": "string",
+                                                    "example": "Mengajar mahasiswa"
+                                                },
+                                                "pendapatan": {
+                                                    "type": "string",
+                                                    "example": "Rp5.000.000"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "skill": {
+                                            "properties": {
+                                                "keterampilan": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                },
+                                                "namaKeterampilan": {
+                                                    "type": "string",
+                                                    "example": "Desain Grafis"
+                                                },
+                                                "keterampilanLainnya": {
+                                                    "type": "string",
+                                                    "example": "Animasi"
+                                                },
+                                                "deskripsiKeterampilan": {
+                                                    "type": "string",
+                                                    "example": "Menguasai Adobe Illustrator"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "interest": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "minat": {
+                                                        "type": "string",
+                                                        "example": "Olahraga"
+                                                    },
+                                                    "minatLainnya": {
+                                                        "type": "string",
+                                                        "example": "Basket"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "organization": {
+                                            "properties": {
+                                                "keterlibatanOrganisasi": {
+                                                    "type": "string",
+                                                    "example": "Aktif"
+                                                },
+                                                "namaOrganisasi": {
+                                                    "type": "string",
+                                                    "example": "Pemuda Persis"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "ID tidak valid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Invalid ID"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Data anggota tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Update data anggota lengkap (personal, keluarga, pendidikan, pekerjaan, keterampilan, minat, organisasi)",
+                "operationId": "15218286aed80aefad9e6fe603355ac9",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID anggota yang ingin diperbarui",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "personal": {
+                                        "properties": {
+                                            "nomorAnggota": {
+                                                "type": "string"
+                                            },
+                                            "nomorKTP": {
+                                                "type": "string"
+                                            },
+                                            "namaLengkap": {
+                                                "type": "string"
+                                            },
+                                            "tempatLahir": {
+                                                "type": "string"
+                                            },
+                                            "tanggalLahir": {
+                                                "type": "string",
+                                                "format": "date"
+                                            },
+                                            "statusMerital": {
+                                                "type": "string"
+                                            },
+                                            "nomorTelepon": {
+                                                "type": "string"
+                                            },
+                                            "nomorWA": {
+                                                "type": "string"
+                                            },
+                                            "alamat": {
+                                                "type": "string"
+                                            },
+                                            "alamatTinggal": {
+                                                "type": "string"
+                                            },
+                                            "otonom": {
+                                                "type": "integer"
+                                            },
+                                            "jamaah": {
+                                                "type": "integer"
+                                            },
+                                            "statusAktif": {
+                                                "type": "boolean"
+                                            },
+                                            "tahunMasuk": {
+                                                "type": "integer"
+                                            },
+                                            "masaAktif": {
+                                                "type": "string"
+                                            },
+                                            "kajianRutin": {
+                                                "type": "string"
+                                            },
+                                            "tahunHaji": {
+                                                "type": "integer"
+                                            },
+                                            "keterangan": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "family": {
+                                        "properties": {
+                                            "jumlahTanggungan": {
+                                                "type": "integer"
+                                            },
+                                            "namaIstri": {
+                                                "type": "string"
+                                            },
+                                            "anggotaPersistri": {
+                                                "type": "string"
+                                            },
+                                            "statusKepemilikanRumah": {
+                                                "type": "string"
+                                            },
+                                            "jumlaSeluruhAnak": {
+                                                "type": "integer"
+                                            },
+                                            "jumlaAnakPemuda": {
+                                                "type": "integer"
+                                            },
+                                            "jumlaAnakPemudi": {
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "education": {
+                                        "properties": {
+                                            "tingkat": {
+                                                "type": "integer"
+                                            },
+                                            "namaSekolah": {
+                                                "type": "string"
+                                            },
+                                            "jurusan": {
+                                                "type": "string"
+                                            },
+                                            "tahunMasuk": {
+                                                "type": "integer"
+                                            },
+                                            "tahunKeluar": {
+                                                "type": "integer"
+                                            },
+                                            "jenisPendidikan": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "work": {
+                                        "properties": {
+                                            "pekerjaan": {
+                                                "type": "integer"
+                                            },
+                                            "pekerjaanLainnya": {
+                                                "type": "string"
+                                            },
+                                            "namaInstansi": {
+                                                "type": "string"
+                                            },
+                                            "deskripsiPekerjaan": {
+                                                "type": "string"
+                                            },
+                                            "pendapatan": {
+                                                "type": "integer"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "skill": {
+                                        "properties": {
+                                            "keterampilan": {
+                                                "type": "integer"
+                                            },
+                                            "keterampilanLainnya": {
+                                                "type": "string"
+                                            },
+                                            "deskripsiKeterampilan": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "interest": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "minat": {
+                                                    "type": "string"
+                                                },
+                                                "minatLainnya": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "organization": {
+                                        "properties": {
+                                            "keterlibatanOrganisasi": {
+                                                "type": "string"
+                                            },
+                                            "namaOrganisasi": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Berhasil memperbarui data anggota",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data berhasil diperbarui"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Data anggota tidak ditemukan"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Hapus data anggota beserta semua data relasinya",
+                "operationId": "188fe163a991ff1b4ed0747e4ab3e636",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID anggota yang ingin dihapus",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data berhasil dihapus",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data berhasil dihapus"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Data anggota tidak ditemukan"
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan saat menghapus data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Terjadi kesalahan saat menghapus data"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/data_monografi": {
+            "get": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Menampilkan statistik monografi anggota (Persis, Persistri, Pemuda, Pemudi)",
+                "operationId": "90fe9152442db9d8f2f59229cffd9f56",
+                "responses": {
+                    "200": {
+                        "description": "Statistik berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "integer",
+                                            "example": 200
+                                        },
+                                        "data_monografi": {
+                                            "properties": {
+                                                "jum_persis": {
+                                                    "type": "integer",
+                                                    "example": 120
+                                                },
+                                                "jum_persistri": {
+                                                    "type": "integer",
+                                                    "example": 90
+                                                },
+                                                "jum_pemuda": {
+                                                    "type": "integer",
+                                                    "example": 70
+                                                },
+                                                "jum_pemudi": {
+                                                    "type": "integer",
+                                                    "example": 65
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan saat mengambil data"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/data_chart": {
+            "get": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Menampilkan data statistik untuk kebutuhan chart (anggota, pendidikan, pekerjaan, keterampilan, mubaligh)",
+                "operationId": "15e689fbddba824d4fc0f8cf55c57313",
+                "responses": {
+                    "200": {
+                        "description": "Data statistik chart berhasil diambil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "anggota": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id_master_jamaah": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "nama_jamaah": {
+                                                        "type": "string",
+                                                        "example": "Banjaran"
+                                                    },
+                                                    "jum_persis": {
+                                                        "type": "integer",
+                                                        "example": 30
+                                                    },
+                                                    "jum_persistri": {
+                                                        "type": "integer",
+                                                        "example": 20
+                                                    },
+                                                    "jum_pemuda": {
+                                                        "type": "integer",
+                                                        "example": 15
+                                                    },
+                                                    "jum_pemudi": {
+                                                        "type": "integer",
+                                                        "example": 10
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "pendidikan": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "tingkat_pendidikan": {
+                                                        "type": "string",
+                                                        "example": "S1"
+                                                    },
+                                                    "jumlah_anggota": {
+                                                        "type": "integer",
+                                                        "example": 50
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "pekerjaan": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "nama_pekerjaan": {
+                                                        "type": "string",
+                                                        "example": "Guru"
+                                                    },
+                                                    "jumlah_anggota": {
+                                                        "type": "integer",
+                                                        "example": 25
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "keterampilan": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "nama_keterampilan": {
+                                                        "type": "string",
+                                                        "example": "Menjahit"
+                                                    },
+                                                    "jumlah_anggota": {
+                                                        "type": "integer",
+                                                        "example": 10
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "mubaligh": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id_master_jamaah": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "nama_jamaah": {
+                                                        "type": "string",
+                                                        "example": "Banjaran"
+                                                    },
+                                                    "jumlah_anggota": {
+                                                        "type": "integer",
+                                                        "example": 5
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Terjadi kesalahan saat mengambil data chart"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/data_choice_pribadi": {
+            "get": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Ambil data pilihan Jamaah & Otonom",
+                "description": "Endpoint ini digunakan untuk mengambil pilihan jamaah dan otonom untuk form data pribadi anggota.",
+                "operationId": "45bbb517faede52ac040736943258212",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil data pilihan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "jamaah": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id_master_jamaah": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "nama_jamaah": {
+                                                        "type": "string",
+                                                        "example": "Banjaran"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "otonom": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id_otonom": {
+                                                        "type": "integer",
+                                                        "example": 2
+                                                    },
+                                                    "nama_otonom": {
+                                                        "type": "string",
+                                                        "example": "Pemuda"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/anggota/by-jamaah/{id_master_jamaah}": {
+            "get": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Ambil data anggota berdasarkan ID Jamaah",
+                "operationId": "9ac9d0ac669ea70c6a7ca72b740ab6c2",
+                "parameters": [
+                    {
+                        "name": "id_master_jamaah",
+                        "in": "path",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "perPage",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "searchTerm",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data anggota berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/anggota/all": {
+            "get": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Ambil semua data anggota (untuk dropdown/select)",
+                "operationId": "856b0c4870e520cce65a4112d9e8d5ce",
+                "parameters": [
+                    {
+                        "name": "searchTerm",
+                        "in": "query",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data anggota berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/data_choice_pendidikan": {
+            "get": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Ambil pilihan data pendidikan",
+                "operationId": "af2fa1a7f6735dd4e9a17911e993af43",
+                "responses": {
+                    "200": {
+                        "description": "Data pendidikan berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/data_choice_pekerjaan": {
+            "get": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Ambil pilihan data pekerjaan",
+                "operationId": "49caedc0b0e3ddd6bdd2cd9691e7b0f4",
+                "responses": {
+                    "200": {
+                        "description": "Data pekerjaan berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/data_choice_keterampilan": {
+            "get": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Ambil pilihan data keterampilan",
+                "operationId": "eb92bb582df71bee6ad7a03ff8343436",
+                "responses": {
+                    "200": {
+                        "description": "Data keterampilan berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/data_choice_minat": {
+            "get": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Ambil pilihan data minat",
+                "operationId": "2665a52bb98b658346e8a56879416f80",
+                "responses": {
+                    "200": {
+                        "description": "Data minat berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/statistik/maps": {
+            "get": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Ambil data koordinat jamaah untuk pemetaan",
+                "operationId": "7185c43a16219a6dd769629ed550ce90",
+                "responses": {
+                    "200": {
+                        "description": "Data lokasi berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/statistik/advanced/pilihan": {
+            "get": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Ambil pilihan data untuk statistik lanjutan",
+                "operationId": "08d8965861f6dadbbff65d8d2cf4e50b",
+                "responses": {
+                    "200": {
+                        "description": "Pilihan data statistik lanjutan berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/statistik/advanced": {
+            "post": {
+                "tags": [
+                    "Anggota"
+                ],
+                "summary": "Ambil statistik lanjutan berdasarkan filter",
+                "operationId": "29e782d18d5a221fff3d469e4d6dee4d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "pendidikan": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "pekerjaan": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "keahlian": {
+                                        "type": "integer",
+                                        "example": 3
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Statistik lanjutan berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Login pengguna",
+                "description": "Login user dan mengembalikan token yang bisa digunakan untuk mengakses API lainnya.",
+                "operationId": "a3b306d14572d1f4bd6c064b3233e7b8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "username",
+                                    "password",
+                                    "device_info",
+                                    "ip_address"
+                                ],
+                                "properties": {
+                                    "username": {
+                                        "type": "string",
+                                        "example": "admin"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "admin123"
+                                    },
+                                    "device_info": {
+                                        "type": "string",
+                                        "example": "Chrome on Windows"
+                                    },
+                                    "ip_address": {
+                                        "type": "string",
+                                        "example": "192.168.1.10"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login berhasil"
+                                        },
+                                        "token": {
+                                            "type": "string"
+                                        },
+                                        "token_type": {
+                                            "type": "string",
+                                            "example": "Bearer"
+                                        },
+                                        "expires_at": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "role": {
+                                            "type": "string",
+                                            "example": "Super Admin"
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer"
+                                                },
+                                                "name_user": {
+                                                    "type": "string"
+                                                },
+                                                "username": {
+                                                    "type": "string"
+                                                },
+                                                "role": {
+                                                    "type": "string"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "permissions": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Username atau password salah"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Logout pengguna",
+                "description": "Logout pengguna dan menghapus token dari database.",
+                "operationId": "fe8f3429cd6979b3b4517e186505f9f9",
+                "responses": {
+                    "200": {
+                        "description": "Logout successful",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logout successful"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid token or token missing"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/fasilitas/by-jamaah/{id_master_jamaah}": {
+            "get": {
+                "tags": [
+                    "Jamaah"
+                ],
+                "summary": "Ambil data fasilitas berdasarkan ID Jamaah",
+                "operationId": "32bef75acb722b6ed1836b88f3191715",
+                "parameters": [
+                    {
+                        "name": "id_master_jamaah",
+                        "in": "path",
+                        "description": "ID master jamaah (opsional)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "perPage",
+                        "in": "query",
+                        "description": "Jumlah data per halaman (default: 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Halaman keberapa (default: 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "searchTerm",
+                        "in": "query",
+                        "description": "Kata kunci pencarian",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data fasilitas berhasil diambil"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/data_jamaah": {
             "get": {
                 "tags": [
                     "Jamaah"
                 ],
-                "summary": "Ambil semua data Jamaah",
-                "operationId": "5e343f569f14157e22a28a4fa1425b56",
+                "summary": "Ambil daftar data jamaah monografi",
+                "operationId": "bac9bb4fdc0de838d76badcb59e08459",
+                "parameters": [
+                    {
+                        "name": "perPage",
+                        "in": "query",
+                        "description": "Jumlah data per halaman (default: 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Pencarian berdasarkan nama jamaah",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Sukses",
+                        "description": "Berhasil mengambil data jamaah monografi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/jamaah-monografi/{id_master_jamaah}": {
+            "get": {
+                "tags": [
+                    "Jamaah"
+                ],
+                "summary": "Ambil detail data jamaah monografi berdasarkan ID",
+                "operationId": "b796756577f3124e66c39cce06410a33",
+                "parameters": [
+                    {
+                        "name": "id_master_jamaah",
+                        "in": "path",
+                        "description": "ID Master Jamaah",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "searchTerm",
+                        "in": "query",
+                        "description": "Filter nama lengkap ketua jamaah",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "perPage",
+                        "in": "query",
+                        "description": "Jumlah data yang diambil (default: 5)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail data jamaah monografi ditemukan"
+                    },
+                    "404": {
+                        "description": "Data Jamaah tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/permissions": {
+            "get": {
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Ambil daftar data permission",
+                "operationId": "27bb1606a7b293d1d49f57bb94ae71f7",
+                "parameters": [
+                    {
+                        "name": "perPage",
+                        "in": "query",
+                        "description": "Jumlah data per halaman (default: 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Pencarian berdasarkan nama_permission, jenis_permission, atau fitur",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil data permission"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Tambah data permission baru",
+                "operationId": "37c918c86b5085b0eb088fa760c7175d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name_permission",
+                                    "jenis_permission",
+                                    "fitur"
+                                ],
+                                "properties": {
+                                    "name_permission": {
+                                        "type": "string",
+                                        "example": "permission.view"
+                                    },
+                                    "jenis_permission": {
+                                        "type": "string",
+                                        "example": "read"
+                                    },
+                                    "fitur": {
+                                        "type": "string",
+                                        "example": "User Management"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Permission berhasil ditambahkan"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/permissions/{id}": {
+            "put": {
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Update data permission berdasarkan ID",
+                "operationId": "db11d4d00da3ece5b99187df6f1e86e7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID permission",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name_permission",
+                                    "jenis_permission",
+                                    "fitur"
+                                ],
+                                "properties": {
+                                    "name_permission": {
+                                        "type": "string",
+                                        "example": "permission.update"
+                                    },
+                                    "jenis_permission": {
+                                        "type": "string",
+                                        "example": "update"
+                                    },
+                                    "fitur": {
+                                        "type": "string",
+                                        "example": "User Management"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permission berhasil diperbarui"
+                    },
+                    "404": {
+                        "description": "Data permission tidak ditemukan"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Permission"
+                ],
+                "summary": "Hapus data permission berdasarkan ID",
+                "operationId": "f0afbd22579524a5bb83b653f7dd18dc",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID permission",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Permission berhasil dihapus"
+                    },
+                    "404": {
+                        "description": "Data permission tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/pesantren/by-jamaah/{id_master_jamaah}": {
+            "get": {
+                "tags": [
+                    "Pesantren"
+                ],
+                "summary": "Ambil data pesantren berdasarkan ID jamaah",
+                "description": "Menampilkan daftar pesantren yang terhubung dengan ID Master Jamaah tertentu, dengan pencarian dan paginasi.",
+                "operationId": "3933461d9c3bfcef32f34f4d42745d6e",
+                "parameters": [
+                    {
+                        "name": "id_master_jamaah",
+                        "in": "path",
+                        "description": "ID master jamaah. Jika null, akan menampilkan semua pesantren.",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "nullable": true
+                        }
+                    },
+                    {
+                        "name": "perPage",
+                        "in": "query",
+                        "description": "Jumlah data per halaman (default: 5)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Halaman saat ini (default: 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "searchTerm",
+                        "in": "query",
+                        "description": "Filter nama pesantren (case-insensitive)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil data pesantren berdasarkan jamaah"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/role": {
+            "get": {
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Ambil daftar role dengan permission",
+                "description": "Endpoint ini digunakan untuk mengambil data role dengan relasi permission, mendukung pencarian dan paginasi.",
+                "operationId": "5382f1f8081ec0784c101b952835e6f7",
+                "parameters": [
+                    {
+                        "name": "perPage",
+                        "in": "query",
+                        "description": "Jumlah data per halaman (default: 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filter berdasarkan nama role atau permission",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil daftar role",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/Jamaah"
-                                    }
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data Roles berhasil dimuat"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name_role": {
+                                                                "type": "string",
+                                                                "example": "Super Admin"
+                                                            },
+                                                            "permissions": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "properties": {
+                                                                        "id": {
+                                                                            "type": "integer",
+                                                                            "example": 1
+                                                                        },
+                                                                        "name_permission": {
+                                                                            "type": "string",
+                                                                            "example": "lihat_data_anggota"
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 25
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 3
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
                                 }
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Tambah role baru",
+                "description": "Membuat role baru beserta daftar permission-nya (opsional).",
+                "operationId": "9520944bc105c406a9d07398b2ea3a17",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name_role"
+                                ],
+                                "properties": {
+                                    "name_role": {
+                                        "type": "string",
+                                        "example": "Admin Keuangan"
+                                    },
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "example": 1
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Role berhasil ditambahkan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Role berhasil ditambahkan!"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "name_role": {
+                                                    "type": "string",
+                                                    "example": "Admin Keuangan"
+                                                },
+                                                "permissions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name_permission": {
+                                                                "type": "string",
+                                                                "example": "lihat_iuran"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/role/{id}": {
+            "put": {
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Ubah role",
+                "description": "Memperbarui nama role dan daftar permission-nya.",
+                "operationId": "fca23372950633c0af12435e340ecd73",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID dari role yang akan diubah",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name_role"
+                                ],
+                                "properties": {
+                                    "name_role": {
+                                        "type": "string",
+                                        "example": "Admin Pembinaan"
+                                    },
+                                    "permissions": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer",
+                                            "example": 3
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Role berhasil diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Role berhasil diperbarui!"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "name_role": {
+                                                    "type": "string",
+                                                    "example": "Admin Pembinaan"
+                                                },
+                                                "permissions": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 3
+                                                            },
+                                                            "name_permission": {
+                                                                "type": "string",
+                                                                "example": "input_program_pembinaan"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Role"
+                ],
+                "summary": "Hapus role",
+                "description": "Menghapus role berdasarkan ID.",
+                "operationId": "f6c38af5a70dd9884b06e9f1dc10cfb7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID dari role yang akan dihapus",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Role berhasil dihapus",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Role berhasil dihapus!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/user": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Daftar user",
+                "description": "Menampilkan daftar pengguna dengan filter pencarian dan paginasi.",
+                "operationId": "971db9bc974c0e607288cfe7ecc10096",
+                "parameters": [
+                    {
+                        "name": "perPage",
+                        "in": "query",
+                        "description": "Jumlah data per halaman",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Kata kunci pencarian (nama, email, username, atau role)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "admin"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Data pengguna berhasil dimuat",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data Users berhasil dimuat"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "Ahmad Fauzi"
+                                                            },
+                                                            "email": {
+                                                                "type": "string",
+                                                                "example": "ahmad@example.com"
+                                                            },
+                                                            "username": {
+                                                                "type": "string",
+                                                                "example": "ahmad123"
+                                                            },
+                                                            "id_anggota": {
+                                                                "type": "integer",
+                                                                "example": 12
+                                                            },
+                                                            "role": {
+                                                                "properties": {
+                                                                    "id": {
+                                                                        "type": "integer",
+                                                                        "example": 2
+                                                                    },
+                                                                    "name_role": {
+                                                                        "type": "string",
+                                                                        "example": "Admin"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            },
+                                                            "anggota": {
+                                                                "properties": {
+                                                                    "id_anggota": {
+                                                                        "type": "integer",
+                                                                        "example": 12
+                                                                    },
+                                                                    "nama_lengkap": {
+                                                                        "type": "string",
+                                                                        "example": "Ahmad Fauzi"
+                                                                    },
+                                                                    "email": {
+                                                                        "type": "string",
+                                                                        "example": "ahmad@example.com"
+                                                                    }
+                                                                },
+                                                                "type": "object"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 100
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Tambah user baru",
+                "description": "Menambahkan user baru ke sistem, termasuk role dan opsional id anggota.",
+                "operationId": "089999749fbdec98922de2f74ba8d540",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "username",
+                                    "password",
+                                    "role_id"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Siti Nurhaliza"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "siti@example.com"
+                                    },
+                                    "username": {
+                                        "type": "string",
+                                        "example": "sitinur"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "rahasia123"
+                                    },
+                                    "role_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "id_anggota": {
+                                        "type": "integer",
+                                        "example": 10,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User berhasil ditambahkan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User berhasil ditambahkan!"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Siti Nurhaliza"
+                                                },
+                                                "username": {
+                                                    "type": "string",
+                                                    "example": "sitinur"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "siti@example.com"
+                                                },
+                                                "role": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 2
+                                                        },
+                                                        "name_role": {
+                                                            "type": "string",
+                                                            "example": "Admin"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "anggota": {
+                                                    "properties": {
+                                                        "id_anggota": {
+                                                            "type": "integer",
+                                                            "example": 10
+                                                        },
+                                                        "nama_lengkap": {
+                                                            "type": "string",
+                                                            "example": "Siti Nurhaliza"
+                                                        },
+                                                        "email": {
+                                                            "type": "string",
+                                                            "example": "siti@example.com"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validasi gagal."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Kesalahan server",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Terjadi kesalahan saat menyimpan user."
+                                        },
+                                        "error": {
+                                            "type": "string",
+                                            "example": "SQLSTATE[23000]: Integrity constraint violation: 1452 ..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/user/{id}": {
+            "put": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Perbarui data user",
+                "description": "Memperbarui informasi user yang sudah ada, termasuk role dan id_anggota.",
+                "operationId": "5e09c26a0abb2b1bf040badb2d9c69ba",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID user yang akan diperbarui",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "email",
+                                    "username",
+                                    "role_id"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Siti Nurhaliza"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "example": "siti@example.com"
+                                    },
+                                    "username": {
+                                        "type": "string",
+                                        "example": "sitinur"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "rahasiaBaru123",
+                                        "nullable": true
+                                    },
+                                    "role_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "id_anggota": {
+                                        "type": "integer",
+                                        "example": 10,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User berhasil diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User berhasil diperbarui!"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Siti Nurhaliza"
+                                                },
+                                                "username": {
+                                                    "type": "string",
+                                                    "example": "sitinur"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "siti@example.com"
+                                                },
+                                                "role": {
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 2
+                                                        },
+                                                        "name_role": {
+                                                            "type": "string",
+                                                            "example": "Admin"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                },
+                                                "anggota": {
+                                                    "properties": {
+                                                        "id_anggota": {
+                                                            "type": "integer",
+                                                            "example": 10
+                                                        },
+                                                        "nama_lengkap": {
+                                                            "type": "string",
+                                                            "example": "Siti Nurhaliza"
+                                                        },
+                                                        "email": {
+                                                            "type": "string",
+                                                            "example": "siti@example.com"
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Validasi gagal."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User tidak ditemukan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data user tidak ditemukan."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Hapus user",
+                "description": "Menghapus user dari sistem berdasarkan ID.",
+                "operationId": "f8d7aea516ee464d0afee90f3a1a1722",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID user yang akan dihapus",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User berhasil dihapus",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "User berhasil dihapus!"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User tidak ditemukan",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Data user tidak ditemukan."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
             }
         }
     },
@@ -64,12 +2918,46 @@
                 },
                 "type": "object"
             }
+        },
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "description": "Gunakan Bearer Token untuk otorisasi",
+                "name": "Authorization",
+                "in": "header",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
         }
     },
     "tags": [
         {
+            "name": "Anggota",
+            "description": "Anggota"
+        },
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
             "name": "Jamaah",
-            "description": "API untuk mengelola data monografi Jamaah"
+            "description": "Jamaah"
+        },
+        {
+            "name": "Permission",
+            "description": "Permission"
+        },
+        {
+            "name": "Pesantren",
+            "description": "Pesantren"
+        },
+        {
+            "name": "Role",
+            "description": "Role"
+        },
+        {
+            "name": "User",
+            "description": "User"
         }
     ]
 }

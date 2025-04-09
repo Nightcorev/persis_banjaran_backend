@@ -11,6 +11,62 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
+    /**
+     * @OA\Get(
+     *     path="/api/user",
+     *     tags={"User"},
+     *     summary="Daftar user",
+     *     description="Menampilkan daftar pengguna dengan filter pencarian dan paginasi.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="perPage",
+     *         in="query",
+     *         description="Jumlah data per halaman",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=10)
+     *     ),
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Kata kunci pencarian (nama, email, username, atau role)",
+     *         required=false,
+     *         @OA\Schema(type="string", example="admin")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Data pengguna berhasil dimuat",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="Data Users berhasil dimuat"),
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="data", type="array", @OA\Items(
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="name", type="string", example="Ahmad Fauzi"),
+     *                     @OA\Property(property="email", type="string", example="ahmad@example.com"),
+     *                     @OA\Property(property="username", type="string", example="ahmad123"),
+     *                     @OA\Property(property="id_anggota", type="integer", example=12),
+     *                     @OA\Property(property="role", type="object",
+     *                         @OA\Property(property="id", type="integer", example=2),
+     *                         @OA\Property(property="name_role", type="string", example="Admin")
+     *                     ),
+     *                     @OA\Property(property="anggota", type="object",
+     *                         @OA\Property(property="id_anggota", type="integer", example=12),
+     *                         @OA\Property(property="nama_lengkap", type="string", example="Ahmad Fauzi"),
+     *                         @OA\Property(property="email", type="string", example="ahmad@example.com")
+     *                     )
+     *                 )),
+     *                 @OA\Property(property="total", type="integer", example=100),
+     *                 @OA\Property(property="per_page", type="integer", example=10),
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=10)
+     *             )
+     *         )
+     *     )
+     * )
+     */
+
     public function index(Request $request)
     {
         $perPage = $request->input('perPage', 10); // Jumlah data per halaman
@@ -28,6 +84,8 @@ class UserController extends Controller
                 $q->where('name', 'like', "%{$searchTerm}%")
                     ->orWhere('email', 'like', "%{$searchTerm}%")
                     ->orWhere('username', 'like', "%{$searchTerm}%");
+            })->orWhereHas('role', function ($q) use ($searchTerm) {
+                $q->where('name_role', 'like', "%{$searchTerm}%");
             });
         }
 
@@ -68,6 +126,69 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    /**
+     * @OA\Post(
+     *     path="/api/user",
+     *     tags={"User"},
+     *     summary="Tambah user baru",
+     *     description="Menambahkan user baru ke sistem, termasuk role dan opsional id anggota.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "email", "username", "password", "role_id"},
+     *             @OA\Property(property="name", type="string", example="Siti Nurhaliza"),
+     *             @OA\Property(property="email", type="string", example="siti@example.com"),
+     *             @OA\Property(property="username", type="string", example="sitinur"),
+     *             @OA\Property(property="password", type="string", example="rahasia123"),
+     *             @OA\Property(property="role_id", type="integer", example=2),
+     *             @OA\Property(property="id_anggota", type="integer", nullable=true, example=10)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="User berhasil ditambahkan",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="User berhasil ditambahkan!"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=5),
+     *                 @OA\Property(property="name", type="string", example="Siti Nurhaliza"),
+     *                 @OA\Property(property="username", type="string", example="sitinur"),
+     *                 @OA\Property(property="email", type="string", example="siti@example.com"),
+     *                 @OA\Property(property="role", type="object",
+     *                     @OA\Property(property="id", type="integer", example=2),
+     *                     @OA\Property(property="name_role", type="string", example="Admin")
+     *                 ),
+     *                 @OA\Property(property="anggota", type="object",
+     *                     @OA\Property(property="id_anggota", type="integer", example=10),
+     *                     @OA\Property(property="nama_lengkap", type="string", example="Siti Nurhaliza"),
+     *                     @OA\Property(property="email", type="string", example="siti@example.com")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validasi gagal",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validasi gagal."),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Kesalahan server",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Terjadi kesalahan saat menyimpan user."),
+     *             @OA\Property(property="error", type="string", example="SQLSTATE[23000]: Integrity constraint violation: 1452 ...")
+     *         )
+     *     )
+     * )
+     */
+
     public function store(Request $request)
     {
         try {
@@ -119,6 +240,75 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
+    /**
+     * @OA\Put(
+     *     path="/api/user/{id}",
+     *     tags={"User"},
+     *     summary="Perbarui data user",
+     *     description="Memperbarui informasi user yang sudah ada, termasuk role dan id_anggota.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID user yang akan diperbarui",
+     *         @OA\Schema(type="integer", example=5)
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name", "email", "username", "role_id"},
+     *             @OA\Property(property="name", type="string", example="Siti Nurhaliza"),
+     *             @OA\Property(property="email", type="string", example="siti@example.com"),
+     *             @OA\Property(property="username", type="string", example="sitinur"),
+     *             @OA\Property(property="password", type="string", nullable=true, example="rahasiaBaru123"),
+     *             @OA\Property(property="role_id", type="integer", example=2),
+     *             @OA\Property(property="id_anggota", type="integer", nullable=true, example=10)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User berhasil diperbarui",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="User berhasil diperbarui!"),
+     *             @OA\Property(property="data", type="object",
+     *                 @OA\Property(property="id", type="integer", example=5),
+     *                 @OA\Property(property="name", type="string", example="Siti Nurhaliza"),
+     *                 @OA\Property(property="username", type="string", example="sitinur"),
+     *                 @OA\Property(property="email", type="string", example="siti@example.com"),
+     *                 @OA\Property(property="role", type="object",
+     *                     @OA\Property(property="id", type="integer", example=2),
+     *                     @OA\Property(property="name_role", type="string", example="Admin")
+     *                 ),
+     *                 @OA\Property(property="anggota", type="object",
+     *                     @OA\Property(property="id_anggota", type="integer", example=10),
+     *                     @OA\Property(property="nama_lengkap", type="string", example="Siti Nurhaliza"),
+     *                     @OA\Property(property="email", type="string", example="siti@example.com")
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validasi gagal",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Validasi gagal."),
+     *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User tidak ditemukan",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Data user tidak ditemukan.")
+     *         )
+     *     )
+     * )
+     */
+
     public function update(Request $request, $id)
     {
         try {
@@ -169,6 +359,39 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    /**
+     * @OA\Delete(
+     *     path="/api/user/{id}",
+     *     tags={"User"},
+     *     summary="Hapus user",
+     *     description="Menghapus user dari sistem berdasarkan ID.",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Parameter(
+     *         name="id",
+     *         in="path",
+     *         required=true,
+     *         description="ID user yang akan dihapus",
+     *         @OA\Schema(type="integer", example=5)
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="User berhasil dihapus",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=true),
+     *             @OA\Property(property="message", type="string", example="User berhasil dihapus!")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User tidak ditemukan",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Data user tidak ditemukan.")
+     *         )
+     *     )
+     * )
+     */
+
     public function destroy($id)
     {
         try {

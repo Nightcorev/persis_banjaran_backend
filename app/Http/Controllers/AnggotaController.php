@@ -19,6 +19,7 @@ use App\Models\MasterKeterampilanModel;
 use App\Models\MasterMinatModel;
 use App\Models\AnggotaOrganisasiModel;
 use illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class AnggotaController extends Controller
 {
@@ -106,7 +107,11 @@ class AnggotaController extends Controller
             't_anggota.status_aktif',
             't_anggota.keterangan',
             't_tingkat_pendidikan.pendidikan',
-            't_master_pekerjaan.nama_pekerjaan',
+            DB::raw("CASE 
+                    WHEN t_master_pekerjaan.nama_pekerjaan = 'Lainnya' 
+                    THEN t_anggota_pekerjaan.lainnya 
+                    ELSE t_master_pekerjaan.nama_pekerjaan 
+                 END AS nama_pekerjaan")
         )
             ->join('t_master_jamaah', 't_anggota.id_master_jamaah', '=', 't_master_jamaah.id_master_jamaah')
             ->leftJoin('t_anggota_pendidikan', 't_anggota.id_anggota', '=', 't_anggota_pendidikan.id_anggota')
@@ -259,27 +264,27 @@ class AnggotaController extends Controller
                 'fotoURL' => $anggota->foto
                     ? "http://localhost:8000/storage/uploads/{$anggota->foto}"
                     : "http://localhost:8000/storage/uploads/persis_default.jpeg",
-                'nomorAnggota' => $anggota->nik ?? '-',
-                'nomorKTP' => $anggota->nomor_ktp ?? '-',
-                'namaLengkap' => $anggota->nama_lengkap ?? '-',
-                'tempatLahir' => $anggota->tempat_lahir ?? '-',
-                'tanggalLahir' => $anggota->tanggal_lahir ?? '-',
-                'statusMerital' => $anggota->status_merital ?? '-',
-                'nomorTelepon' => $anggota->no_telp ?? '-',
-                'nomorWA' => $anggota->no_wa ?? '-',
-                'alamat' => $anggota->alamat ?? '-',
-                'alamatTinggal' => $anggota->alamat_tinggal ?? '-',
-                'otonom' => $anggota->id_otonom ?? '-',
-                'namaOtonom' => $otonom->nama_otonom ?? '-',
-                'jamaah' => $anggota->id_master_jamaah ?? '-',
-                'namaJamaah' => $jamaah->nama_jamaah ?? '-',
-                'statusAktif' => $anggota->status_aktif ?? '-',
-                'namaStatusAktif' => $statusMapping[$anggota->status_aktif] ?? '-',
-                'tahunMasuk' => $anggota->tahun_masuk_anggota ?? '-',
-                'masaAktif' => $anggota->masa_aktif_anggota ?? '-',
-                'kajianRutin' => $anggota->kajian_rutin ?? '-',
+                'nomorAnggota' => $anggota->nik ?? null,
+                'nomorKTP' => $anggota->nomor_ktp ?? null,
+                'namaLengkap' => $anggota->nama_lengkap ?? null,
+                'tempatLahir' => $anggota->tempat_lahir ?? null,
+                'tanggalLahir' => $anggota->tanggal_lahir ?? null,
+                'statusMerital' => $anggota->status_merital ?? null,
+                'nomorTelepon' => $anggota->no_telp ?? null,
+                'nomorWA' => $anggota->no_wa ?? null,
+                'alamat' => $anggota->alamat ?? null,
+                'alamatTinggal' => $anggota->alamat_tinggal ?? null,
+                'otonom' => $anggota->id_otonom ?? null,
+                'namaOtonom' => $otonom->nama_otonom ?? null,
+                'jamaah' => $anggota->id_master_jamaah ?? null,
+                'namaJamaah' => $jamaah->nama_jamaah ?? null,
+                'statusAktif' => $anggota->status_aktif ?? null,
+                'namaStatusAktif' => $statusMapping[$anggota->status_aktif] ?? null,
+                'tahunMasuk' => $anggota->tahun_masuk_anggota ?? null,
+                'masaAktif' => $anggota->masa_aktif_anggota ?? null,
+                'kajianRutin' => $anggota->kajian_rutin ?? null,
                 'tahunHaji' => $anggota->tahun_haji ?? null,
-                'keterangan' => $anggota->keterangan ?? '-',
+                'keterangan' => $anggota->keterangan ?? null,
             ],
             'family' => [
                 'jumlahTanggungan' => $keluarga->jumlah_tanggungan ?? null,
@@ -420,28 +425,32 @@ class AnggotaController extends Controller
 
         $dataPersonal = $request->input('personal');
 
-        $fullUrl = $dataPersonal['fotoURL'] ?? null;
-        $relativePath = str_replace("http://localhost:8000/storage/uploads/", "", $fullUrl);
+        $encryptedName = null;
 
-        $fileName = basename($relativePath);
-        $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION) ?: 'png';
-        $encryptedName = Str::random(10) . '.' . $fileExtension;
+        if (!empty($dataPersonal['fotoURL'])) {
+            $fullUrl = $dataPersonal['fotoURL'];
+            $relativePath = str_replace("http://localhost:8000/storage/uploads/", "", $fullUrl);
 
-        $oldPath = public_path("storage/uploads/" . $relativePath);
-        $newPath = public_path("storage/uploads/" . $encryptedName);
+            $fileName = basename($relativePath);
+            $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION) ?: 'png';
+            $encryptedName = Str::random(10) . '.' . $fileExtension;
 
-        Log::info("Old Path: " . $oldPath);
-        Log::info("New Path: " . $newPath);
+            $oldPath = public_path("storage/uploads/" . $relativePath);
+            $newPath = public_path("storage/uploads/" . $encryptedName);
 
-        if (file_exists($oldPath)) {
-            rename($oldPath, $newPath);
-            Log::info("File berhasil dipindahkan.");
-        } else {
-            Log::error("File tidak ditemukan di path: " . $oldPath);
+            Log::info("Old Path: " . $oldPath);
+            Log::info("New Path: " . $newPath);
+
+            if (file_exists($oldPath)) {
+                rename($oldPath, $newPath);
+                Log::info("File berhasil dipindahkan.");
+            } else {
+                Log::error("File tidak ditemukan di path: " . $oldPath);
+            }
         }
 
         $anggota = AnggotaModel::create([
-            'foto' => $encryptedName ?? "default",
+            'foto' => $encryptedName ?? null,
             'nik' => $dataPersonal['nomorAnggota'] ?? null,
             'nomor_ktp' => $dataPersonal['nomorKTP'] ?? null,
             'nama_lengkap' => $dataPersonal['namaLengkap'] ?? null,
@@ -630,34 +639,37 @@ class AnggotaController extends Controller
         // Cari anggota berdasarkan ID
         $anggota = AnggotaModel::findOrFail($id);
 
-        $fullUrl = $request->input('personal.fotoURL');
-        $relativePath = str_replace("http://localhost:8000/storage/uploads/", "", $fullUrl);
+        if (!empty($dataPersonal['fotoURL'])) {
+            $fullUrl = $request->input('personal.fotoURL');
+            $relativePath = str_replace("http://localhost:8000/storage/uploads/", "", $fullUrl);
 
-        if ($relativePath !== $anggota->foto) {
-            $fileName = basename($relativePath);
-            $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION) ?: 'png';
-            $encryptedName = Str::random(10) . '.' . $fileExtension;
+            if ($relativePath !== $anggota->foto) {
+                $fileName = basename($relativePath);
+                $fileExtension = pathinfo($fileName, PATHINFO_EXTENSION) ?: 'png';
+                $encryptedName = Str::random(10) . '.' . $fileExtension;
 
-            $oldPath = public_path("storage/uploads/" . $anggota->foto);
-            $newPath = public_path("storage/uploads/" . $encryptedName);
+                $oldPath = public_path("storage/uploads/" . $anggota->foto);
+                $newPath = public_path("storage/uploads/" . $encryptedName);
 
-            // Hapus file lama jika ada
-            if (file_exists($oldPath) && $anggota->foto !== "default") {
-                unlink($oldPath);
-                Log::info("File lama dihapus: " . $oldPath);
-            }
+                // Hapus file lama jika ada
+                if (file_exists($oldPath) && $anggota->foto !== "default") {
+                    unlink($oldPath);
+                    Log::info("File lama dihapus: " . $oldPath);
+                }
 
-            // Pindahkan file baru
-            if (file_exists(public_path("storage/uploads/" . $relativePath))) {
-                rename(public_path("storage/uploads/" . $relativePath), $newPath);
-                Log::info("File baru disimpan: " . $newPath);
+                // Pindahkan file baru
+                if (file_exists(public_path("storage/uploads/" . $relativePath))) {
+                    rename(public_path("storage/uploads/" . $relativePath), $newPath);
+                    Log::info("File baru disimpan: " . $newPath);
 
-                // Update nama file di database
-                $anggota->foto = $encryptedName;
-            } else {
-                Log::error("File baru tidak ditemukan: " . $relativePath);
+                    // Update nama file di database
+                    $anggota->foto = $encryptedName;
+                } else {
+                    Log::error("File baru tidak ditemukan: " . $relativePath);
+                }
             }
         }
+
 
         // Update data personal
         $dataPersonal = $request->input('personal');
@@ -917,46 +929,30 @@ class AnggotaController extends Controller
 
     public function chart()
     {
+        // Data jumlah anggota Persis per Jamaah
+        $dataPersisPerJamaah = MasterJamaahModel::withCount([
+            'anggota as jum_persis' => function ($query) {
+                $query->where('id_otonom', 1)
+                    ->where('status_aktif', 1);
+            }
+        ])->get()->keyBy('id_master_jamaah');
 
-        $dataPersisPerJamaah = MasterJamaahModel::select(
-            't_master_jamaah.id_master_jamaah',
-            't_master_jamaah.nama_jamaah'
-        )
-            ->withCount([
-                'anggota as jum_persis' => function ($query) {
-                    $query->where('id_otonom', 1)
-                        ->where('status_aktif', 1);
-                }
-            ])
-            ->orderBy('t_master_jamaah.id_master_jamaah')
+        // Data monografi jamaah
+        $dataAnggotaPerJamaah = MasterJamaahModel::with('monografi')
             ->get()
-            ->keyBy('id_master_jamaah');
-
-        $dataAnggotaPerJamaah = MasterJamaahModel::select(
-            't_master_jamaah.id_master_jamaah',
-            't_master_jamaah.nama_jamaah',
-            't_jamaah_monografi.jum_persistri',
-            't_jamaah_monografi.jum_pemuda',
-            't_jamaah_monografi.jum_pemudi'
-        )
-            ->leftJoin('t_jamaah_monografi', 't_master_jamaah.id_master_jamaah', '=', 't_jamaah_monografi.id_jamaah')
-            ->orderBy('t_master_jamaah.id_master_jamaah')
-            ->get()
-            ->map(function ($item) use ($dataPersisPerJamaah) {
-                $persisData = $dataPersisPerJamaah[$item->id_master_jamaah] ?? null;
-
+            ->map(function ($jamaah) use ($dataPersisPerJamaah) {
+                $persisData = $dataPersisPerJamaah[$jamaah->id_master_jamaah] ?? null;
                 return [
-                    'id_master_jamaah' => $item->id_master_jamaah,
-                    'nama_jamaah' => $item->nama_jamaah,
+                    'id_master_jamaah' => $jamaah->id_master_jamaah,
+                    'nama_jamaah' => $jamaah->nama_jamaah,
                     'jum_persis' => $persisData ? $persisData->jum_persis : 0,
-                    'jum_persistri' => $item->jum_persistri ?? 0,
-                    'jum_pemuda' => $item->jum_pemuda ?? 0,
-                    'jum_pemudi' => $item->jum_pemudi ?? 0,
+                    'jum_persistri' => $jamaah->monografi->jum_persistri ?? 0,
+                    'jum_pemuda' => $jamaah->monografi->jum_pemuda ?? 0,
+                    'jum_pemudi' => $jamaah->monografi->jum_pemudi ?? 0,
                 ];
             });
 
-
-
+        // Data pendidikan anggota
         $dataPendidikan = AnggotaPendidikanModel::with('tingkat_pendidikan')
             ->selectRaw('id_tingkat_pendidikan, COUNT(id_anggota) as jumlah_anggota')
             ->groupBy('id_tingkat_pendidikan')
@@ -965,42 +961,54 @@ class AnggotaController extends Controller
             ->map(function ($item) {
                 return [
                     'tingkat_pendidikan' => $item->tingkat_pendidikan->pendidikan ?? 'Tidak Diketahui',
-                    'jumlah_anggota' => $item->jumlah_anggota
+                    'jumlah_anggota' => $item->jumlah_anggota,
                 ];
             });
 
-        $dataPekerjaan = AnggotaPekerjaanModel::selectRaw('t_master_pekerjaan.nama_pekerjaan, COUNT(t_anggota_pekerjaan.id_anggota) as jumlah_anggota')
-            ->join('t_master_pekerjaan', 't_anggota_pekerjaan.id_master_pekerjaan', '=', 't_master_pekerjaan.id_master_pekerjaan')
-            ->groupBy('t_master_pekerjaan.nama_pekerjaan')
-            ->orderBy('t_master_pekerjaan.nama_pekerjaan')
-            ->get();
+        // Data pekerjaan anggota
+        $dataPekerjaan = MasterPekerjaanModel::withCount(['anggota_pekerjaan as jumlah_anggota'])
+            ->orderBy('nama_pekerjaan')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'nama_pekerjaan' => $item->nama_pekerjaan,
+                    'jumlah_anggota' => $item->jumlah_anggota,
+                ];
+            });
 
-        $dataKeterampilan = AnggotaKeterampilanModel::selectRaw('t_master_keterampilan.nama_keterampilan, COUNT(t_anggota_keterampilan.id_anggota) as jumlah_anggota')
-            ->join('t_master_keterampilan', 't_anggota_keterampilan.id_master_keterampilan', '=', 't_master_keterampilan.id_master_keterampilan')
-            ->where('t_master_keterampilan.nama_keterampilan', '!=', 'Tidak Ada') // Mengecualikan 'Tidak Ada'
-            ->groupBy('t_master_keterampilan.nama_keterampilan')
-            ->orderBy('t_master_keterampilan.nama_keterampilan')
-            ->get();
+        // Data keterampilan anggota
+        $dataKeterampilan = MasterKeterampilanModel::where('nama_keterampilan', '!=', 'Tidak Ada')
+            ->withCount(['anggota_keterampilan as jumlah_anggota'])
+            ->orderBy('nama_keterampilan')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'nama_keterampilan' => $item->nama_keterampilan,
+                    'jumlah_anggota' => $item->jumlah_anggota,
+                ];
+            });
 
-        $dataMubaligh = MasterJamaahModel::select(
-            't_master_jamaah.id_master_jamaah',
-            't_master_jamaah.nama_jamaah',
-            't_jamaah_monografi.jum_mubaligh as jumlah_anggota'
-        )
-            ->leftJoin('t_jamaah_monografi', 't_master_jamaah.id_master_jamaah', '=', 't_jamaah_monografi.id_jamaah')
-            ->orderBy('t_master_jamaah.nama_jamaah')
-            ->get();
-
-
+        // Data mubaligh per jamaah (dari monografi)
+        $dataMubaligh = MasterJamaahModel::with('monografi')
+            ->orderBy('nama_jamaah')
+            ->get()
+            ->map(function ($jamaah) {
+                return [
+                    'id_master_jamaah' => $jamaah->id_master_jamaah,
+                    'nama_jamaah' => $jamaah->nama_jamaah,
+                    'jumlah_anggota' => $jamaah->monografi->jum_mubaligh ?? 0,
+                ];
+            });
 
         return response()->json([
             'anggota' => $dataAnggotaPerJamaah,
             'pendidikan' => $dataPendidikan,
             'pekerjaan' => $dataPekerjaan,
             'keterampilan' => $dataKeterampilan,
-            'mubaligh' => $dataMubaligh
+            'mubaligh' => $dataMubaligh,
         ], 200);
     }
+
 
     /**
      * @OA\Get(

@@ -22,7 +22,7 @@ class MusyawarahModel extends Model
         return $this->belongsTo(MasterJamaahModel::class, 'id_master_jamaah', 'id_master_jamaah');
     }
 
-    public function musyawarahDetail()
+    public function musyawarah_detail()
     {
         return $this->hasMany(MusyawarahDetailModel::class, 'id_musyawarah', 'id_musyawarah');
     }

@@ -45,10 +45,10 @@ class JamaahMonografiController extends Controller
             'musyawarah' => function ($query) {
                 $query->where('aktif', 1);
             },
-            'musyawarah.musyawarahDetail' => function ($query) {
+            'musyawarah.musyawarah_detail' => function ($query) {
                 $query->where('jabatan', 'Ketua');
             },
-            'musyawarah.musyawarahDetail.anggota',
+            'musyawarah.musyawarah_detail.anggota',
             'monografi'
         ]);
 
@@ -65,7 +65,7 @@ class JamaahMonografiController extends Controller
             return [
                 'id_master_jamaah' => $jamaah->id_master_jamaah,
                 'nama_jamaah' => $jamaah->nama_jamaah,
-                'nama_lengkap' => optional($jamaah->musyawarah->musyawarahDetail->first()->anggota)->nama_lengkap ?? 'Tidak Ada Ketua',
+                'nama_lengkap' => optional($jamaah->musyawarah->musyawarah_detail->first()->anggota)->nama_lengkap ?? 'Tidak Ada Ketua',
                 'tgl_pelaksanaan' => optional($jamaah->musyawarah)->tgl_pelaksanaan,
                 'tgl_akhir_jihad' => optional($jamaah->musyawarah)->tgl_akhir_jihad,
                 'jml_persis' => $jamaah->jumlahPersis() ?? 0,
@@ -144,10 +144,10 @@ class JamaahMonografiController extends Controller
             'musyawarah' => function ($query) {
                 $query->where('aktif', 1);
             },
-            'musyawarah.musyawarahDetail' => function ($query) {
+            'musyawarah.musyawarah_detail' => function ($query) {
                 $query->where('jabatan', 'Ketua');
             },
-            'musyawarah.musyawarahDetail.anggota',
+            'musyawarah.musyawarah_detail.anggota',
             'monografi'
         ])->where('id_master_jamaah', $id_master_jamaah)->first();
 
@@ -164,7 +164,7 @@ class JamaahMonografiController extends Controller
         $musyawarahData = [
             'id_master_jamaah' => $jamaah->id_master_jamaah,
             'nama_jamaah' => $jamaah->nama_jamaah,
-            'nama_lengkap' => optional($jamaah->musyawarah->musyawarahDetail->first()->anggota)->nama_lengkap ?? 'Tidak Ada Ketua',
+            'nama_lengkap' => optional($jamaah->musyawarah->musyawarah_detail->first()->anggota)->nama_lengkap ?? 'Tidak Ada Ketua',
             'alamat' => $jamaah->alamat,
             'jml_persis' => $jamaah->jumlahPersis() ?? 0,
             'jml_persistri' => optional($jamaah->monografi)->jum_persistri ?? 0,

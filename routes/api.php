@@ -11,6 +11,7 @@ use App\Http\Controllers\JamaahFasilitasController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\MusyawarahController;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,3 +98,6 @@ Route::put('/edit_anggota/{id}', [AnggotaController::class, 'update']);
 Route::delete('/delete_anggota/{id}', [AnggotaController::class, 'destroy']);
 
 Route::get('/advanced_statistic', [AnggotaController::class, 'advancedStatistic']);
+
+Route::get('/data_musyawarah', [MusyawarahController::class, 'index']);
+Route::get('/detail_musyawarah/{id}', [MusyawarahController::class, 'view']);

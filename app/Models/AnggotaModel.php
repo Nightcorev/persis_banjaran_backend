@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -35,6 +36,20 @@ class AnggotaModel extends Model
         'no_wa',
         'alamat_tinggal',
     ];
+
+    /**
+     * Menunjukkan jika ID bukan auto-incrementing. (Biarkan false jika auto-increment)
+     *
+     * @var bool
+     */
+    public $incrementing = true; // Biasanya true untuk PK auto-increment
+
+    /**
+     * Tipe data primary key. (Biarkan 'int' jika integer)
+     *
+     * @var string
+     */
+    protected $keyType = 'int'; // Atau 'string' jika PK bukan integer
 
     public function master_jamaah()
     {
@@ -96,9 +111,18 @@ class AnggotaModel extends Model
         return $this->hasOne(AsatidzModel::class, 'id_anggota', 'id_anggota');
     }
 
-    public function iuran_log()
+    /**
+     * Mendapatkan semua log iuran yang terkait dengan anggota ini.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function iuranLogs()
     {
-        return $this->hasOne(IuranLogModel::class, 'id_anggota', 'id_anggota');
+        // Pastikan nama model IuranLog sudah benar
+        // Argumen ketiga (local key) harus sama dengan $primaryKey model ini
+        //return $this->hasMany(IuranLog::class, 'anggota_id', $this->getKeyName());
+        return $this->hasMany(IuranLog::class, 'anggota_id', 'id_anggota');
+        // atau hardcode jika yakin: return $this->hasMany(IuranLog::class, 'anggota_id', 'id_anggota');
     }
 
 
@@ -114,4 +138,3 @@ class AnggotaModel extends Model
         );
     }
 }
-

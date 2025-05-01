@@ -98,6 +98,28 @@ class JamaahMonografiController extends Controller
 
     /**
      * @OA\Get(
+     *     path="/api/data_choice_jamaah",
+     *     tags={"Jamaah"},
+     *     summary="Ambil pilihan data jamaah",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(response=200, description="Data jamaah berhasil diambil")
+     * )
+     */
+
+    public function getChoiceDataJamaah(Request $request)
+    {
+        $datajamaah = MasterJamaahModel::select(
+            'id_master_jamaah',
+            'nama_jamaah'
+        )->get();
+
+        return response()->json([
+            'data' => $datajamaah,
+        ], 200);
+    }
+
+    /**
+     * @OA\Get(
      *     path="/api/jamaah-monografi/{id_master_jamaah}",
      *     tags={"Jamaah"},
      *     summary="Ambil detail data jamaah monografi berdasarkan ID",

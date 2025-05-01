@@ -4,7 +4,10 @@ use App\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AnggotaController;
+use App\Http\Controllers\Api\IuranController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\IuranController as ControllersIuranController;
+use App\Http\Controllers\JamaahController;
 use App\Http\Controllers\JamaahMonografiController;
 use App\Http\Controllers\PesantrenController;
 use App\Http\Controllers\JamaahFasilitasController;
@@ -42,6 +45,8 @@ Route::middleware('auth.token')->group(function () {
         ->middleware('permission:data_anggota,delete');
     Route::get('/anggota/by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'indexByJamaah']);
 
+    Route::get('/anggota/choice_by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'anggotaByJamaah']);
+
     Route::post('/upload-foto', [AnggotaController::class, 'uploadFoto']);
 
     // Route untuk Data Jamaah dan Statistik
@@ -56,6 +61,7 @@ Route::middleware('auth.token')->group(function () {
     Route::get('/data_choice_pekerjaan', [AnggotaController::class, 'getChoiceDataPekerjaan']);
     Route::get('/data_choice_keterampilan', [AnggotaController::class, 'getChoiceDataKeterampilan']);
     Route::get('/data_choice_minat', [AnggotaController::class, 'getChoiceDataMinat']);
+    Route::get('/data_choice_jamaah', [JamaahMonografiController::class, 'getChoiceDataJamaah']);
 
     // Route untuk Webhooks
     Route::get('webhooks', [WebhookController::class, 'verifyWebhook']);
@@ -88,6 +94,43 @@ Route::middleware('auth.token')->group(function () {
         Route::put('/{id}', [UserController::class, 'update']);
         Route::delete('/{id}', [UserController::class, 'destroy']);
     });
+
+    // Endpoint Iuran
+    Route::prefix('iuran')->group(function () {
+        Route::get('/summary', [ControllersIuranController::class, 'summary']);
+        Route::get('/payment/{id}', [ControllersIuranController::class, 'paymentDetail']);
+        Route::post('/pay', [ControllersIuranController::class, 'store']);
+        Route::put('/edit/{id}', [ControllersIuranController::class, 'updateNominal']);
+        Route::put('/verify/{id}', [ControllersIuranController::class, 'verify']);
+        Route::put('/reject/{id}', [ControllersIuranController::class, 'reject']);
+        Route::delete('/{id}', [ControllersIuranController::class, 'destroy']);
+        Route::post('/reminder/batch', [ControllersIuranController::class, 'sendBatchReminder']);
+        Route::get('/tunggakan', [ControllersIuranController::class, 'getTunggakan']);
+    });
+
+    // Route::prefix('iuran')->group(function () {
+    //     Route::get('/summary', [IuranController::class, 'summary'])
+    //          ->middleware('permission:iuran,view');
+    //     Route::get('/payment/{id}', [IuranController::class, 'paymentDetail'])
+    //          ->middleware('permission:iuran,view');
+    //     Route::post('/pay', [IuranController::class, 'store'])
+    //          ->middleware('permission:iuran,create');
+    //     Route::put('/edit/{id}', [IuranController::class, 'updateNominal'])
+    //          ->middleware('permission:iuran,update');
+    //     Route::put('/verify/{id}', [IuranController::class, 'verify'])
+    //          ->middleware('permission:iuran,verify');
+    //     Route::put('/reject/{id}', [IuranController::class, 'reject'])
+    //          ->middleware('permission:iuran,reject');
+    //     Route::delete('/{id}', [IuranController::class, 'destroy'])
+    //          ->middleware('permission:iuran,delete');
+    //     Route::post('/reminder/batch', [IuranController::class, 'sendBatchReminder'])
+    //          ->middleware('permission:iuran,send_reminder');
+
+    //     // --- RUTE BARU UNTUK DATA TUNGGAKAN ---
+    //     Route::get('/tunggakan', [IuranController::class, 'getTunggakan'])
+    //          ->middleware('permission:iuran,view'); // Atau permission 'send_reminder'
+    //     // --- AKHIR RUTE BARU ---
+    // });
 });
 
 Route::get('/anggota', [AnggotaController::class, 'index']);

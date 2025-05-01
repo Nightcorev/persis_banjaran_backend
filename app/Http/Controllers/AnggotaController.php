@@ -1093,7 +1093,7 @@ class AnggotaController extends Controller
 
     public function indexByJamaah(Request $request, $id_master_jamaah = null)
     {
-        $perPage = $request->input('perPage', 5);
+        $perPage = $request->input('perPage');
         $page = $request->input('page', 1);
         $searchTerm = $request->input('searchTerm', '');
 

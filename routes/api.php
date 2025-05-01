@@ -41,7 +41,7 @@ Route::middleware('auth.token')->group(function () {
         ->middleware('permission:data_anggota,edit');
     Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy'])
         ->middleware('permission:data_anggota,delete');
-    Route::get('/anggota/by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'indexByJamaah']);
+    // Route::get('/anggota/by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'indexByJamaah']);
 
     Route::post('/upload-foto', [AnggotaController::class, 'uploadFoto']);
 
@@ -105,3 +105,9 @@ Route::post('/add_musyawarah', [MusyawarahController::class, 'store']);
 Route::put('/edit_musyawarah/{id}', [MusyawarahController::class, 'update']);
 Route::delete('/delete_musyawarah/{id}', [MusyawarahController::class, 'destroy']);
 Route::get('/data_jamaah', [JamaahMonografiController::class, 'index']);
+Route::get('/anggota/by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'indexByJamaah']);
+
+Route::post('/musyawarah/detail/{id_musyawarah}', [MusyawarahController::class, 'addDetail']);
+Route::put('/musyawarah/detail/{id_musyawarah}/{id_detail}', [MusyawarahController::class, 'updateDetail']);
+Route::delete('/musyawarah/detail/{id_musyawarah}/{id_detail}', [MusyawarahController::class, 'destroyDetail']);
+Route::get('/musyawarah/detail/{id_musyawarah}/{id_detail}', [MusyawarahController::class, 'showDetail']);

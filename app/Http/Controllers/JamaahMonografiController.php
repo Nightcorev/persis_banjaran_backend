@@ -38,7 +38,7 @@ class JamaahMonografiController extends Controller
 
     public function index(Request $request)
     {
-        $perPage = $request->input('perPage', 10);
+        $perPage = $request->input('perPage');
         $searchTerm = $request->input('search', '');
 
         $query = MasterJamaahModel::with([
@@ -60,10 +60,16 @@ class JamaahMonografiController extends Controller
         // Paginasi data
         $paginatedData = $query->paginate($perPage);
 
+        // Transform data untuk menambahkan jumlah_persis ke dalam setiap item
+        $transformedData = $paginatedData->through(function ($item) {
+            $item->jumlah_persis = $item->jumlahPersis();
+            return $item;
+        });
+
         return response()->json([
             'success' => true,
             'message' => 'Data Jamaah Monografi',
-            'data' => $paginatedData,
+            'data' => $transformedData
         ]);
     }
 

@@ -11,7 +11,7 @@ class MusyawarahController extends Controller
 {
     public function index(Request $request, $id_master_jamaah = null)
     {
-        $perPage = $request->input('perPage', 10);
+        $perPage = $request->input('perPage', 33);
         $page = $request->input('page', 1);
         $searchTerm = $request->input('searchTerm', '');
         
@@ -73,15 +73,46 @@ class MusyawarahController extends Controller
             'tgl_pelaksanaan' => 'required|date',
             'tgl_akhir_jihad' => 'required|date',
             'aktif' => 'required|boolean',
+            'id_anggota' => 'required|integer', // ID anggota yang akan menjadi ketua
         ]);
 
         if ($validator->fails()) {
             return response()->json(['status' => 400, 'errors' => $validator->errors()], 400);
         }
 
-        $musyawarah = MusyawarahModel::create($validator->validated());
+        // Begin transaction
+        \DB::beginTransaction();
+        try {
+            // Create musyawarah
+            $musyawarah = MusyawarahModel::create($validator->validated());
 
-        return response()->json(['status' => 201, 'data' => $musyawarah], 201);
+            // Create musyawarah detail for ketua
+            MusyawarahDetailModel::create([
+                'id_musyawarah' => $musyawarah->id_musyawarah,
+                'id_anggota' => $request->id_anggota,
+                'jabatan' => 'Ketua',
+                'aktif' => true
+            ]);
+
+            \DB::commit();
+
+            // Load relations for response
+            $musyawarah->load(['musyawarah_detail.anggota']);
+
+            return response()->json([
+                'status' => 201, 
+                'message' => 'Musyawarah created successfully',
+                'data' => $musyawarah
+            ], 201);
+
+        } catch (\Exception $e) {
+            \DB::rollback();
+            return response()->json([
+                'status' => 500,
+                'message' => 'Failed to create musyawarah',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function update(Request $request, $id)
@@ -120,4 +151,154 @@ class MusyawarahController extends Controller
 
         return response()->json(['status' => 200, 'message' => 'Musyawarah deleted successfully'], 200);
     }
+        public function showDetail($id_musyawarah, $id_detail)
+    {
+        $detail = MusyawarahDetailModel::where('id_musyawarah', $id_musyawarah)
+            ->where('id_musyawarah_detail', $id_detail)
+            ->with(['anggota']) // Load anggota relation
+            ->first();
+    
+        if (!$detail) {
+            return response()->json([
+                'status' => 404, 
+                'message' => 'Musyawarah detail not found'
+            ], 404);
+        }
+    
+        return response()->json([
+            'status' => 200,
+            'data' => $detail
+        ], 200);
+    }
+    
+    public function addDetail(Request $request, $id_musyawarah)
+    {
+        $musyawarah = MusyawarahModel::find($id_musyawarah);
+    
+        if (!$musyawarah) {
+            return response()->json(['status' => 404, 'message' => 'Musyawarah not found'], 404);
+        }
+    
+        $validator = Validator::make($request->all(), [
+            'id_anggota' => 'required|integer|exists:t_anggota,id_anggota',
+            'jabatan' => 'required|string|max:50', // Remove the 'in' validation
+            'aktif' => 'required|boolean',
+            'no_sk' => 'nullable|string|max:100'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['status' => 400, 'errors' => $validator->errors()], 400);
+        }
+    
+        // Special validation for Ketua position
+        if (strtolower($request->jabatan) === 'ketua') {
+            $existingKetua = MusyawarahDetailModel::where('id_musyawarah', $id_musyawarah)
+                ->where('jabatan', 'Ketua')
+                ->where('aktif', true)
+                ->first();
+    
+            if ($existingKetua) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Jabatan Ketua sudah ada dan masih aktif'
+                ], 400);
+            }
+        }
+    
+        $detail = MusyawarahDetailModel::create([
+            'id_musyawarah' => $id_musyawarah,
+            'id_anggota' => $request->id_anggota,
+            'jabatan' => $request->jabatan,
+            'aktif' => $request->aktif,
+            'no_sk' => $request->no_sk
+        ]);
+    
+        return response()->json([
+            'status' => 201,
+            'message' => 'Musyawarah detail added successfully',
+            'data' => $detail->load('anggota')
+        ], 201);
+    }
+    
+    public function updateDetail(Request $request, $id_musyawarah, $id_detail)
+    {
+        $detail = MusyawarahDetailModel::where('id_musyawarah', $id_musyawarah)
+            ->where('id_musyawarah_detail', $id_detail)
+            ->first();
+    
+        if (!$detail) {
+            return response()->json(['status' => 404, 'message' => 'Musyawarah detail not found'], 404);
+        }
+    
+        $validator = Validator::make($request->all(), [
+            'id_anggota' => 'nullable|integer|exists:t_anggota,id_anggota',
+            'jabatan' => 'nullable|string|max:50', // Remove the 'in' validation
+            'aktif' => 'nullable|boolean',
+            'no_sk' => 'nullable|string|max:100'
+        ]);
+    
+        if ($validator->fails()) {
+            return response()->json(['status' => 400, 'errors' => $validator->errors()], 400);
+        }
+    
+        // Special validation for Ketua position when changing jabatan
+        if ($request->has('jabatan') && strtolower($request->jabatan) === 'ketua') {
+            $existingKetua = MusyawarahDetailModel::where('id_musyawarah', $id_musyawarah)
+                ->where('jabatan', 'Ketua')
+                ->where('id_musyawarah_detail', '!=', $id_detail)
+                ->where('aktif', true)
+                ->first();
+    
+            if ($existingKetua) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => 'Jabatan Ketua sudah ada dan masih aktif'
+                ], 400);
+            }
+        }
+    
+        // Check if jabatan already exists (excluding current detail)
+        if ($request->has('jabatan')) {
+            $existingJabatan = MusyawarahDetailModel::where('id_musyawarah', $id_musyawarah)
+                ->where('jabatan', $request->jabatan)
+                ->where('id_musyawarah_detail', '!=', $id_detail)
+                ->where('aktif', true)
+                ->first();
+    
+            if ($existingJabatan) {
+                return response()->json([
+                    'status' => 400,
+                    'message' => "Jabatan {$request->jabatan} sudah ada dan masih aktif"
+                ], 400);
+            }
+        }
+    
+        $detail->update($validator->validated());
+    
+        return response()->json([
+            'status' => 200,
+            'message' => 'Musyawarah detail updated successfully',
+            'data' => $detail->load('anggota')
+        ], 200);
+    }
+    
+    public function destroyDetail($id_musyawarah, $id_detail)
+    {
+        $detail = MusyawarahDetailModel::where('id_musyawarah', $id_musyawarah)
+            ->where('id_musyawarah_detail', $id_detail)
+            ->first();
+    
+        if (!$detail) {
+            return response()->json(['status' => 404, 'message' => 'Musyawarah detail not found'], 404);
+        }
+    
+        $detail->delete();
+    
+        return response()->json([
+            'status' => 200,
+            'message' => 'Musyawarah detail deleted successfully'
+        ], 200);
+    }
+
+    
 }

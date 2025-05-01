@@ -14,6 +14,7 @@ use App\Http\Controllers\JamaahFasilitasController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\BroadcastController;
 
 /*
 |--------------------------------------------------------------------------
@@ -132,6 +133,9 @@ Route::middleware('auth.token')->group(function () {
     //     // --- AKHIR RUTE BARU ---
     // });
 });
+Route::get('/broadcast', [BroadcastController::class, 'index']);
+Route::post('/broadcast', [BroadcastController::class, 'store']);
+Route::post('/upload-attachment', [BroadcastController::class, 'uploadAttachment']);
 
 Route::get('/anggota', [AnggotaController::class, 'index']);
 Route::get('/get_anggota/{id}', [AnggotaController::class, 'show']);

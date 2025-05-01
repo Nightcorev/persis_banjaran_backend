@@ -43,21 +43,4 @@ class JamaahMonografiModel extends Model
         return $this->hasOne(JamaahMonografiModel::class, 'id_master_jamaah', 'id_master_jamaah');
     }
 
-    public function musyawarah()
-    {
-        return $this->hasOne(MusyawarahModel::class, 'id_master_jamaah', 'id_master_jamaah');
-    }
-
-    public function musyawarahDetail()
-    {
-        return $this->hasOneThrough(
-            MusyawarahDetailModel::class,
-            MusyawarahModel::class,
-            'id_master_jamaah', // Foreign key di `t_musyawarah`
-            'id_musyawarah', // Foreign key di `t_musyawarah_detail`
-            'id_master_jamaah', // Primary key di `t_master_jamaah`
-            'id_musyawarah' // Primary key di `t_musyawarah`
-        );
-    }
-
 }

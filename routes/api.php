@@ -15,6 +15,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\BroadcastController;
+use App\Http\Controllers\ResponBotController;
 
 /*
 |--------------------------------------------------------------------------
@@ -132,10 +133,24 @@ Route::middleware('auth.token')->group(function () {
     //          ->middleware('permission:iuran,view'); // Atau permission 'send_reminder'
     //     // --- AKHIR RUTE BARU ---
     // });
+
+    // --- Endpoint Chatbot (BARU) ---
+    Route::get('/chatbot', [ResponBotController::class, 'index']); // Kecualikan aksi yg butuh permission beda
+
+    Route::post('/chatbot', [ResponBotController::class, 'store']);
+
+    Route::put('/chatbot/{responBot}', [ResponBotController::class, 'update']);
+
+    Route::get('chatbot/{responBot}', [ResponBotController::class, 'show']);
+
+    Route::delete('/chatbot/{responBot}', [ResponBotController::class, 'destroy']);
+
+    Route::get('/broadcast', [BroadcastController::class, 'index']);
+    Route::post('/broadcast', [BroadcastController::class, 'store']);
+    Route::post('/upload-attachment', [BroadcastController::class, 'uploadAttachment']);
+    // --- AKHIR Endpoint Chatbot ---
 });
-Route::get('/broadcast', [BroadcastController::class, 'index']);
-Route::post('/broadcast', [BroadcastController::class, 'store']);
-Route::post('/upload-attachment', [BroadcastController::class, 'uploadAttachment']);
+
 
 Route::get('/anggota', [AnggotaController::class, 'index']);
 Route::get('/get_anggota/{id}', [AnggotaController::class, 'show']);

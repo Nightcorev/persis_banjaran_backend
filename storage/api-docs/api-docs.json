@@ -1563,6 +1563,316 @@
                 ]
             }
         },
+        "/api/iuran/summary": {
+            "get": {
+                "tags": [
+                    "Iuran"
+                ],
+                "summary": "Get ringkasan iuran tahunan per anggota",
+                "operationId": "1bd7a7017784fb3dad904e57a8116adb",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Jumlah item per halaman",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "jamaah_id",
+                        "in": "query",
+                        "description": "Filter berdasarkan ID jamaah",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Filter berdasarkan nama anggota",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil mengambil data"
+                    },
+                    "404": {
+                        "description": "Tahun aktif tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/iuran/payment/{id}": {
+            "get": {
+                "tags": [
+                    "Iuran"
+                ],
+                "summary": "Detail pembayaran iuran",
+                "operationId": "615c7b44832e7703bb4afbff81826c11",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Detail pembayaran ditemukan"
+                    },
+                    "404": {
+                        "description": "Data tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/iuran/pay": {
+            "post": {
+                "tags": [
+                    "Iuran"
+                ],
+                "summary": "Input pembayaran iuran baru",
+                "operationId": "00a2a65aaf24352730c36d42a13d8767",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "payments"
+                                ],
+                                "properties": {
+                                    "payments": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "anggota_id": {
+                                                    "type": "integer"
+                                                },
+                                                "nominal": {
+                                                    "type": "number"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Pembayaran berhasil disimpan"
+                    },
+                    "400": {
+                        "description": "Tahun aktif tidak tersedia"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    },
+                    "500": {
+                        "description": "Kesalahan server"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/iuran/edit/{id}": {
+            "put": {
+                "tags": [
+                    "Iuran"
+                ],
+                "summary": "Update nominal pembayaran",
+                "operationId": "7d36050ba606ab58db6801455dd28f57",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "nominal"
+                                ],
+                                "properties": {
+                                    "nominal": {
+                                        "type": "number"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Berhasil diperbarui"
+                    },
+                    "403": {
+                        "description": "Tidak bisa edit"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/iuran/verify/{id}": {
+            "put": {
+                "tags": [
+                    "Iuran"
+                ],
+                "summary": "Verifikasi pembayaran iuran",
+                "operationId": "c0457f04587ca367555394db245353bd",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Pembayaran diverifikasi"
+                    },
+                    "403": {
+                        "description": "Tidak diizinkan verifikasi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/iuran/reject/{id}": {
+            "put": {
+                "tags": [
+                    "Iuran"
+                ],
+                "summary": "Tolak pembayaran iuran",
+                "operationId": "54c52719f02faa85a473f07b3cbc14df",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "catatan"
+                                ],
+                                "properties": {
+                                    "catatan": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Pembayaran ditolak"
+                    },
+                    "403": {
+                        "description": "Tidak diizinkan"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/iuran/{id}": {
+            "delete": {
+                "tags": [
+                    "Iuran"
+                ],
+                "summary": "Hapus pembayaran iuran",
+                "operationId": "0b73d544d388efb293631d7f8bede14e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil dihapus"
+                    },
+                    "403": {
+                        "description": "Tidak bisa dihapus"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/api/fasilitas/by-jamaah/{id_master_jamaah}": {
             "get": {
                 "tags": [
@@ -1650,6 +1960,25 @@
                 "responses": {
                     "200": {
                         "description": "Berhasil mengambil data jamaah monografi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/data_choice_jamaah": {
+            "get": {
+                "tags": [
+                    "Jamaah"
+                ],
+                "summary": "Ambil pilihan data jamaah",
+                "operationId": "b6c4f3b391e53d1a65c8c5af1c061196",
+                "responses": {
+                    "200": {
+                        "description": "Data jamaah berhasil diambil"
                     }
                 },
                 "security": [
@@ -2938,6 +3267,10 @@
         {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "Iuran",
+            "description": "Iuran"
         },
         {
             "name": "Jamaah",

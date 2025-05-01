@@ -1115,6 +1115,25 @@ class AnggotaController extends Controller
         return response()->json(['status' => 200, 'data' => $anggota], 200);
     }
 
+    public function anggotaByJamaah($id_master_jamaah = null)
+    {
+        $query = AnggotaModel::with([
+            'master_jamaah'
+
+        ])->when($id_master_jamaah, function ($query, $id_master_jamaah) {
+            return $query->where('id_master_jamaah', $id_master_jamaah);
+        })->where('t_anggota.status_aktif', 1)
+            ->orderBy('id_master_jamaah', 'asc');
+        // Ambil semua data tanpa paginasi
+        $anggota = $query->get();
+
+        // Kembalikan respons dalam format JSON
+        return response()->json([
+            'status' => 200,
+            'data' => $anggota,
+        ], 200);
+    }
+
 
 
     /**

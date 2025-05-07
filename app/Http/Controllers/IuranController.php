@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Imports\IuranImport;
 use Illuminate\Http\Request;
 use App\Models\IuranLog;
 use App\Models\AnggotaModel;
@@ -11,8 +12,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Maatwebsite\Excel\Facades\Excel;
 
 class IuranController extends Controller
 {
@@ -50,74 +54,97 @@ class IuranController extends Controller
      */
     public function summary(Request $request)
     {
-        $tahunAktif = TahunAktif::where('status', 'Aktif')->value('tahun');
+        // ... (Kode ambil tahunAktif, filter, pagination - sama) ...
+        $tahunAktif = $request->input('tahun', TahunAktif::where('status', 'Aktif')->value('tahun'));
         if (!$tahunAktif) {
-            return response()->json(['message' => 'Tidak ada tahun iuran aktif'], 404);
+            return response()->json(['message' => 'Tahun iuran tidak valid.'], 400);
         }
-
+        //Log::info('Summary - Tahun digunakan:', [$tahunAktif]);
         $perPage = $request->input('per_page', 10);
         $jamaahId = $request->input('jamaah_id');
         $searchTerm = $request->input('search');
-        Log::info('Tahun Aktif digunakan:', [$tahunAktif]);
 
         $query = AnggotaModel::query()
-            ->select([
-                't_anggota.id_anggota as anggota_id',
-                't_anggota.nama_lengkap',
-                't_master_jamaah.nama_jamaah'
-            ])
-            ->where('t_anggota.status_aktif', 1)
+            ->select(['t_anggota.id_anggota', 't_anggota.nama_lengkap', 't_anggota.id_master_jamaah', 't_master_jamaah.nama_jamaah'])
             ->join('t_master_jamaah', 't_anggota.id_master_jamaah', '=', 't_master_jamaah.id_master_jamaah')
-            ->withSum(['iuranLogs as total_nominal_bayar_tahun_ini' => function ($q) use ($tahunAktif) {
-                $q->where('tahun', (int)$tahunAktif)->where('status', 'Verified');
-            }], 'nominal');
-        // Eager loading dihapus, diganti Query Builder di transform
 
-        // Filter Jamaah
+            // Ambil SEMUA log di tahun aktif, termasuk Failed
+            ->with(['iuranLogs' => function ($q) use ($tahunAktif) {
+                $q->where('tahun', (int)$tahunAktif)
+                    // Urutkan berdasarkan status: Verified > Pending > Failed > Lainnya (berdasarkan ID terbaru)
+                    ->orderByRaw("CASE status WHEN 'Verified' THEN 1 WHEN 'Pending' THEN 2 WHEN 'Failed' THEN 3 ELSE 4 END")
+                    ->orderBy('id', 'desc') // Jika status sama, ambil yg terbaru
+                    ->select('id', 'anggota_id', 'status', 'paid_months', 'catatan_verifikasi'); // Ambil catatan juga
+            }])
+            ->where('t_anggota.status_aktif', 1);
+
         if ($jamaahId) {
             $query->where('t_anggota.id_master_jamaah', $jamaahId);
         }
-
-        // Filter Search (Case-Insensitive)
         if ($searchTerm) {
-            // --- PERUBAHAN DI SINI ---
-            // Gunakan ILIKE untuk PostgreSQL atau LOWER() untuk kompatibilitas lebih luas
-            // Jika Anda yakin selalu pakai PostgreSQL:
             $query->where('t_anggota.nama_lengkap', 'ILIKE', '%' . $searchTerm . '%');
-
-            // Alternatif (lebih portabel antar database):
-            // $query->whereRaw('LOWER(t_anggota.nama_lengkap) LIKE ?', ['%' . strtolower($searchTerm) . '%']);
-            // --- AKHIR PERUBAHAN ---
         }
 
         $paginatedData = $query->paginate($perPage);
 
-        // Proses data menggunakan Query Builder (seperti sebelumnya)
-        $paginatedData->getCollection()->transform(function ($item) use ($tahunAktif) {
-            $manualLogsCollection = DB::table('t_iuran_log')
-                ->where('anggota_id', $item->anggota_id)
-                ->where('tahun', (int)$tahunAktif)
-                ->orderBy('tanggal', 'desc')
-                ->orderBy('id', 'desc')
-                ->get();
+        // Proses data untuk menambahkan bulan_status
+        $paginatedData->getCollection()->transform(function ($item) {
+            $bulanStatusProses = []; // Simpan status final per bulan
+            $catatanFailed = []; // Simpan catatan jika failed
 
-            //Log::info('Query Builder Logs for Anggota ID: ' . $item->anggota_id . ' in Year: ' . $tahunAktif, $manualLogsCollection->toArray());
+            //Log::info('Eager Loaded Logs for Anggota ID: ' . $item->id_anggota, $item->relationLoaded('iuranLogs') ? $item->iuranLogs->toArray() : 'RELATION NOT LOADED');
 
-            $latestLog = $manualLogsCollection->first();
-            $latestPendingFailedLog = $manualLogsCollection
-                ->whereIn('status', ['Pending', 'Failed'])
-                ->first();
+            if ($item->relationLoaded('iuranLogs')) {
+                foreach ($item->iuranLogs as $log) {
+                    $decodedMonths = json_decode($log->paid_months, true);
+                    if (!is_array($decodedMonths)) {
+                        Log::warning('paid_months JSON tidak valid log ID: ' . $log->id);
+                        $decodedMonths = [];
+                    }
+                    $paidMonthsInLog = collect($decodedMonths)->map(fn($m) => (int)$m)->filter(fn($m) => $m > 0);
 
-            $item->status_terakhir = $latestLog ? $latestLog->status : null;
-            $item->id_pembayaran_terakhir_untuk_aksi = $latestPendingFailedLog ? $latestPendingFailedLog->id : null;
-            $item->nominal_terakhir = $latestLog ? $latestLog->nominal : null;
-            $item->tanggal_input_terakhir = $latestLog ? Carbon::parse($latestLog->tanggal)->toDateString() : null;
-            $item->catatan_verifikasi = $latestLog && $latestLog->status === 'Failed' ? $latestLog->catatan_verifikasi : null;
-            $item->total_nominal_bayar_tahun_ini = $item->total_nominal_bayar_tahun_ini ?? 0;
+                    if ($paidMonthsInLog->isEmpty()) {
+                        continue;
+                    }
 
-            //Log::info('Summary Data Prepared (using QB):', [ /* ... data log ... */ ]);
+                    // Tetapkan status berdasarkan prioritas (Verified > Pending > Failed)
+                    foreach ($paidMonthsInLog as $month) {
+                        if (!isset($bulanStatusProses[$month])) { // Jika belum ada status, langsung set
+                            $bulanStatusProses[$month] = $log->status;
+                            if ($log->status === 'Failed') {
+                                $catatanFailed[$month] = $log->catatan_verifikasi; // Simpan catatan
+                            }
+                        }
+                        // Jika sudah ada TAPI bukan Verified, bisa ditimpa oleh status yg lebih tinggi
+                        // (Karena sudah diurutkan, Verified akan diproses duluan)
+                        // Tidak perlu logika prioritas eksplisit di sini karena sudah diurutkan query
+                    }
+                }
+            }
 
-            return $item;
+            // Tentukan status akhir dan tambahkan catatan jika failed
+            $finalBulanStatus = [];
+            for ($i = 1; $i <= 12; $i++) {
+                $status = $bulanStatusProses[$i] ?? 'Belum Lunas';
+                $finalBulanStatus[$i] = [
+                    'status' => $status,
+                    'catatan' => ($status === 'Failed') ? ($catatanFailed[$i] ?? 'Tidak ada catatan.') : null,
+                ];
+            }
+
+            // Buat objek hasil
+            $resultItem = new \stdClass();
+            $resultItem->anggota_id = $item->id_anggota;
+            $resultItem->nama_lengkap = $item->nama_lengkap;
+            $resultItem->nama_jamaah = $item->nama_jamaah;
+            $resultItem->bulan_status = $finalBulanStatus; // Kirim objek status & catatan
+
+            // Log::info('Summary Data Prepared (Monthly Final Fix 4):', [
+            //     'anggota_id' => $resultItem->anggota_id,
+            //     'bulan_status' => $resultItem->bulan_status,
+            // ]);
+
+            return $resultItem;
         });
 
         return response()->json($paginatedData);
@@ -334,23 +361,27 @@ class IuranController extends Controller
      *     security={{"bearerAuth": {}}}
      * )
      */
-    public function verify($id)
-
+    public function verifyLog(IuranLog $iuranLog) // Gunakan type-hinting
     {
-        //  if (!Gate::allows('verifikasi-iuran')) {
-        //      abort(403, 'Anda tidak punya hak akses untuk verifikasi.');
-        //  }
+        // Otorisasi (Hanya Bendahara/Admin)
+        // if (!Gate::allows('verifikasi-iuran')) { abort(403); }
 
-        $log = IuranLog::whereIn('status', ['Pending'])->findOrFail($id); // Hanya bisa verif yg Pending
+        // Pastikan hanya bisa verifikasi yg Pending
+        if ($iuranLog->status !== 'Pending') {
+            return response()->json(['message' => 'Hanya pembayaran pending yang bisa diverifikasi.'], 400);
+        }
 
-        $log->update([
-            'status' => 'Verified',
-            'verifikator_id' => Auth::id(),
-            'catatan_verifikasi' => null // Hapus catatan jika ada sblmnya
-            // Anda bisa menambahkan kolom 'verified_at' jika perlu
-        ]);
-
-        return response()->json(['message' => 'Pembayaran berhasil diverifikasi.']);
+        try {
+            $iuranLog->update([
+                'status' => 'Verified',
+                'verifikator_id' => Auth::id(),
+                'catatan_verifikasi' => null, // Hapus catatan jika ada
+            ]);
+            return response()->json(['message' => 'Pembayaran berhasil diverifikasi.']);
+        } catch (\Exception $e) {
+            Log::error("Error verifyLog (ID: {$iuranLog->id}): " . $e->getMessage());
+            return response()->json(['message' => 'Gagal memverifikasi pembayaran.'], 500);
+        }
     }
 
     // PUT /iuran/reject/{id}
@@ -378,27 +409,31 @@ class IuranController extends Controller
      *     security={{"bearerAuth": {}}}
      * )
      */
-    public function reject(Request $request, $id)
-
+    public function rejectLog(Request $request, IuranLog $iuranLog) // Gunakan type-hinting
     {
-        //  if (!Gate::allows('verifikasi-iuran')) { // Asumsi Bendahara yg bisa reject jg
-        //      abort(403, 'Anda tidak punya hak akses untuk menolak pembayaran.');
-        //  }
+        // Otorisasi (Hanya Bendahara/Admin)
+        // if (!Gate::allows('verifikasi-iuran')) { abort(403); } // Asumsi permission sama
 
         $validated = $request->validate([
-            'catatan' => 'required|string|max:500',
+            'catatan' => 'required|string|max:500', // Wajib ada alasan
         ]);
 
-        $log = IuranLog::whereIn('status', ['Pending'])->findOrFail($id); // Hanya bisa reject yg Pending
+        // Pastikan hanya bisa reject yg Pending
+        if ($iuranLog->status !== 'Pending') {
+            return response()->json(['message' => 'Hanya pembayaran pending yang bisa ditolak.'], 400);
+        }
 
-        $log->update([
-            'status' => 'Failed',
-            'catatan_verifikasi' => $validated['catatan'],
-            'verifikator_id' => Auth::id(),
-            // Anda bisa menambahkan kolom 'failed_at' jika perlu
-        ]);
-
-        return response()->json(['message' => 'Pembayaran ditolak (Failed).']);
+        try {
+            $iuranLog->update([
+                'status' => 'Failed',
+                'catatan_verifikasi' => $validated['catatan'],
+                'verifikator_id' => Auth::id(),
+            ]);
+            return response()->json(['message' => 'Pembayaran ditolak (Failed).']);
+        } catch (\Exception $e) {
+            Log::error("Error rejectLog (ID: {$iuranLog->id}): " . $e->getMessage());
+            return response()->json(['message' => 'Gagal menolak pembayaran.'], 500);
+        }
     }
 
     // DELETE /iuran/{id}
@@ -608,5 +643,199 @@ class IuranController extends Controller
         });
 
         return response()->json($paginatedData);
+    }
+
+    public function payMonths(Request $request)
+    {
+        // Otorisasi tetap bisa dicek via middleware/gate jika perlu
+
+        $validated = $request->validate([
+            'anggota_id' => ['required', Rule::exists('t_anggota', 'id_anggota')],
+            'tahun' => 'required|integer|digits:4',
+            'months' => 'required|array|min:1',
+            'months.*' => 'required|integer|between:1,12',
+            // --- VALIDASI ROLE DARI FRONTEND ---
+            'role' => 'required|string|in:Pimpinan Jamaah,Bendahara,Super Admin' // Sesuaikan nama role
+            // --- AKHIR VALIDASI ROLE ---
+        ]);
+
+        $anggotaId = $validated['anggota_id'];
+        $tahun = $validated['tahun'];
+        $paidMonths = collect($validated['months'])->unique()->sort()->values()->toArray();
+        $jumlahBulan = count($paidMonths);
+        $inputterRole = $validated['role']; // Ambil role dari request
+
+        $biayaBulanan = config('iuran.monthly_fee', 10000);
+        $totalNominal = $jumlahBulan * $biayaBulanan;
+
+        // Cek duplikasi pembayaran (sama)
+        $existingPaidMonths = IuranLog::where('anggota_id', $anggotaId)->where('tahun', $tahun)->whereIn('status', ['Verified', 'Pending'])->pluck('paid_months')->flatten()->unique();
+        $alreadyPaidOrPending = collect($paidMonths)->intersect($existingPaidMonths);
+        if ($alreadyPaidOrPending->isNotEmpty()) {
+            return response()->json(['message' => 'Pembayaran gagal. Bulan berikut sudah lunas atau pending: ' . $alreadyPaidOrPending->implode(', ')], 422);
+        }
+
+        // --- PENENTUAN STATUS BERDASARKAN ROLE DARI REQUEST ---
+        $isVerifier = in_array($inputterRole, ['Bendahara', 'Super Admin']); // Cek role dari request
+        $status = $isVerifier ? 'Verified' : 'Pending';
+        // --- AKHIR PENENTUAN STATUS ---
+
+        // Hitung distribusi (sama)
+        $distPercentage = config('iuran.distribution_percentage', 0.20);
+        $distKeys = config('iuran.distribution_keys', ['pj', 'pc', 'pd', 'pw', 'pp']);
+        $distributionValue = $totalNominal * $distPercentage;
+
+        DB::beginTransaction();
+        try {
+            $logData = [
+                'anggota_id' => $anggotaId,
+                'nominal' => $totalNominal,
+                'tanggal' => Carbon::now(),
+                'tahun' => $tahun,
+                'paid_months' => json_encode($paidMonths),
+                'status' => $status,
+                'pj_input_id' => Auth::id(), // Tetap catat siapa yg login & input
+                // Set verifikator_id jika status langsung Verified
+                'verifikator_id' => ($status === 'Verified') ? Auth::id() : null,
+            ];
+            foreach ($distKeys as $key) {
+                $logData[$key] = $distributionValue;
+            }
+
+            IuranLog::create($logData);
+
+            DB::commit();
+            return response()->json(['message' => 'Pembayaran berhasil dicatat (' . $status . ')'], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error payMonths: " . $e->getMessage());
+            return response()->json(['message' => 'Terjadi kesalahan saat menyimpan pembayaran.'], 500);
+        }
+    }
+
+    public function getHistory(Request $request, $anggotaId)
+    {
+        $validated = $request->validate([
+            'tahun' => 'required|integer|digits:4',
+        ]);
+        $tahun = $validated['tahun'];
+
+        $history = IuranLog::where('anggota_id', $anggotaId)
+            ->where('tahun', $tahun)
+            // --- FILTER STATUS BARU ---
+            ->whereIn('status', ['Verified', 'Failed'])
+            // --- AKHIR FILTER ---
+            ->with('verifikator:id,name')
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('id', 'desc')
+            ->get([
+                'id',
+                'tanggal',
+                'created_at',
+                'nominal',
+                'paid_months',
+                'status',
+                'catatan_verifikasi',
+                'verifikator_id' // atau 'pj_input_id.name' jika perlu penginput
+            ]);
+        return response()->json($history);
+    }
+
+    public function getPendingLogs(Request $request, $anggotaId)
+    {
+        // Otorisasi (Hanya Bendahara/Admin)
+        // if (!Gate::allows('verifikasi-iuran')) { abort(403); }
+
+        $validated = $request->validate([
+            'tahun' => 'required|integer|digits:4',
+        ]);
+        $tahun = $validated['tahun'];
+
+        $pendingLogs = IuranLog::where('anggota_id', $anggotaId)
+            ->where('tahun', $tahun)
+            ->where('status', 'Pending') // Hanya ambil yang Pending
+            ->with('pjInput:id,name') // Ambil nama PJ yang input
+            ->orderBy('tanggal', 'asc') // Urutkan dari yang terlama pending
+            ->orderBy('id', 'asc')
+            ->get([
+                'id',
+                'tanggal',
+                'created_at',
+                'nominal',
+                'paid_months',
+                'status',
+                'pj_input_id' // Ambil pj_input_id
+            ]);
+        //Log::info('Pending Logs:', $pendingLogs->toArray()); // Log pending logs
+        return response()->json($pendingLogs);
+    }
+
+    public function import(Request $request)
+    {
+        // Otorisasi (Hanya Admin/Bendahara) - Bisa via middleware atau Gate
+        // if (!Gate::allows('import-iuran')) { abort(403); }
+
+        // --- DEBUGGING AUTH ---
+        $user = $request->user; // Dapatkan user yg login
+        Log::info('Import request initiated by User:', [$user ? $user->id : 'NULL']);
+        if (!$user) {
+            // Seharusnya tidak terjadi jika middleware auth:sanctum aktif
+            return response()->json(['message' => 'Akses tidak terautentikasi.'], 401);
+        }
+        // --- AKHIR DEBUGGING AUTH ---
+
+        // Log request data sebelum validasi untuk cek file_import
+        Log::info('Import Request Data (Before Validation):', $request->all());
+        Log::info('Has file_import?', ['hasFile' => $request->hasFile('file_import')]);
+        Log::info('File object:', ['file' => $request->file('file_import')]);
+
+
+        $validator = Validator::make($request->all(), [
+            'file_import' => 'required|file|mimes:xlsx,xls|max:5120', // Tambah max size (misal 5MB)
+            'tahun' => 'required|integer|digits:4',
+        ]);
+
+        if ($validator->fails()) {
+            Log::error('Import Validation Failed:', $validator->errors()->toArray());
+            return response()->json(['message' => 'Validasi gagal.', 'errors' => $validator->errors()], 422);
+        }
+
+        $file = $request->file('file_import');
+        $tahunImport = $request->input('tahun');
+
+        // Buat instance import object, kirim user yg sudah diautentikasi
+        $import = new IuranImport($tahunImport, $user);
+
+        DB::beginTransaction();
+        try {
+            Excel::import($import, $file);
+
+            if (!empty($import->getErrors())) {
+                DB::rollBack();
+                Log::warning('Import completed with data errors:', $import->getErrors());
+                return response()->json([
+                    'message' => 'Impor gagal. Ditemukan error pada data:',
+                    'errors' => $import->getErrors()
+                ], 422);
+            }
+
+            DB::commit();
+            return response()->json([
+                'message' => "Impor berhasil. {$import->getProcessedRowCount()} data pembayaran dicatat."
+            ]);
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            DB::rollBack();
+            $failures = $e->failures();
+            $errorMessages = [];
+            foreach ($failures as $failure) {
+                $errorMessages[] = "Baris " . $failure->row() . ": " . implode(', ', $failure->errors());
+            }
+            Log::error('Excel Validation Exception:', $errorMessages);
+            return response()->json(['message' => 'Impor gagal karena validasi data Excel.', 'errors' => $errorMessages], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error("Error processing import file: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]); // Log trace
+            return response()->json(['message' => 'Terjadi kesalahan saat memproses file impor.'], 500);
+        }
     }
 }

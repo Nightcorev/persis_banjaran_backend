@@ -4,9 +4,8 @@ use App\Http\Controllers\WebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AnggotaController;
-use App\Http\Controllers\Api\IuranController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\IuranController as ControllersIuranController;
+use App\Http\Controllers\IuranController;
 use App\Http\Controllers\JamaahController;
 use App\Http\Controllers\JamaahMonografiController;
 use App\Http\Controllers\PesantrenController;
@@ -17,6 +16,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\MusyawarahController;
 use App\Http\Controllers\BroadcastController;
 use App\Http\Controllers\ResponBotController;
+use App\Http\Controllers\TahunAktifController;
 
 /*
 |--------------------------------------------------------------------------
@@ -99,17 +99,40 @@ Route::middleware('auth.token')->group(function () {
     });
 
     // Endpoint Iuran
+    // Route::prefix('iuran')->group(function () {
+    //     Route::get('/summary', [ControllersIuranController::class, 'summary']);
+    //     Route::get('/payment/{id}', [ControllersIuranController::class, 'paymentDetail']);
+    //     Route::post('/pay', [ControllersIuranController::class, 'store']);
+    //     Route::put('/edit/{id}', [ControllersIuranController::class, 'updateNominal']);
+    //     Route::put('/verify/{id}', [ControllersIuranController::class, 'verify']);
+    //     Route::put('/reject/{id}', [ControllersIuranController::class, 'reject']);
+    //     Route::delete('/{id}', [ControllersIuranController::class, 'destroy']);
+    //     Route::post('/reminder/batch', [ControllersIuranController::class, 'sendBatchReminder']);
+    //     Route::get('/tunggakan', [ControllersIuranController::class, 'getTunggakan']);
+    // });
+
     Route::prefix('iuran')->group(function () {
-        Route::get('/summary', [ControllersIuranController::class, 'summary']);
-        Route::get('/payment/{id}', [ControllersIuranController::class, 'paymentDetail']);
-        Route::post('/pay', [ControllersIuranController::class, 'store']);
-        Route::put('/edit/{id}', [ControllersIuranController::class, 'updateNominal']);
-        Route::put('/verify/{id}', [ControllersIuranController::class, 'verify']);
-        Route::put('/reject/{id}', [ControllersIuranController::class, 'reject']);
-        Route::delete('/{id}', [ControllersIuranController::class, 'destroy']);
-        Route::post('/reminder/batch', [ControllersIuranController::class, 'sendBatchReminder']);
-        Route::get('/tunggakan', [ControllersIuranController::class, 'getTunggakan']);
+        Route::get('/summary', [IuranController::class, 'summary']);
+        Route::post('/pay-months', [IuranController::class, 'payMonths']); // Ganti/tambah permission jika perlu
+        Route::get('/history/{anggotaId}', [IuranController::class, 'getHistory']); // Atau permission view_history
+        Route::post('/import', [IuranController::class, 'import']); // Permission baru: import
+        Route::put('/verify-log/{iuranLog}', [IuranController::class, 'verifyLog']);
+        Route::put('/reject-log/{iuranLog}', [IuranController::class, 'rejectLog']);
+        Route::get('/pending-logs/{anggotaId}', [IuranController::class, 'getPendingLogs']); // Atau permission khusus
+
+
+        // Endpoint lama yg mungkin tidak dipakai lagi?
+        // Route::get('/payment/{id}', [IuranController::class, 'paymentDetail']);
+        // Route::post('/pay', [IuranController::class, 'store']);
+        // Route::put('/edit/{id}', [IuranController::class, 'updateNominal']);
+
+        // Route::delete('/{id}', [IuranController::class, 'destroy']);
+        Route::post('/reminder/batch', [IuranController::class, 'sendBatchReminder']);
+        Route::get('/tunggakan', [IuranController::class, 'getTunggakan']);
     });
+
+    // --- Endpoint Tahun Aktif (BARU) ---
+    Route::apiResource('tahun-aktif', TahunAktifController::class); // Permission baru: manage
 
     // Route::prefix('iuran')->group(function () {
     //     Route::get('/summary', [IuranController::class, 'summary'])

@@ -1762,7 +1762,7 @@
                     "Iuran"
                 ],
                 "summary": "Verifikasi pembayaran iuran",
-                "operationId": "c0457f04587ca367555394db245353bd",
+                "operationId": "379940cdb3d354cd985e56fd0b953e1e",
                 "parameters": [
                     {
                         "name": "id",
@@ -1794,7 +1794,7 @@
                     "Iuran"
                 ],
                 "summary": "Tolak pembayaran iuran",
-                "operationId": "54c52719f02faa85a473f07b3cbc14df",
+                "operationId": "78776947dff5bf146cedace333ce151f",
                 "parameters": [
                     {
                         "name": "id",

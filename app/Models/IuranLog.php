@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 class IuranLog extends Model
 {
     use HasFactory;
-
     protected $table = 't_iuran_log';
 
     protected $fillable = [
@@ -16,6 +15,7 @@ class IuranLog extends Model
         'nominal',
         'tanggal',
         'tahun',
+        'paid_months', // <-- Tambahkan ini
         'pj',
         'pc',
         'pd',
@@ -28,7 +28,7 @@ class IuranLog extends Model
     ];
 
     protected $casts = [
-        'status' => 'string', // Atau gunakan Enum class jika dibuat
+        'status' => 'string',
         'nominal' => 'decimal:2',
         'pj' => 'decimal:2',
         'pc' => 'decimal:2',
@@ -36,25 +36,21 @@ class IuranLog extends Model
         'pw' => 'decimal:2',
         'pp' => 'decimal:2',
         'tanggal' => 'date',
-        'tahun' => 'integer',
+        'tanggal' => 'datetime:Y-m-d H:i:s',
+        'paid_months' => 'array', // <-- Tambahkan cast ke array/json
     ];
 
-    // Relasi
+    // Relasi (sama seperti sebelumnya)
     public function anggota()
     {
-        // Sesuaikan 'App\Models\Anggota' jika nama model/namespace berbeda
-        return $this->belongsTo(AnggotaModel::class, 'anggota_id');
-    }
-
+        return $this->belongsTo(AnggotaModel::class, 'anggota_id', 'id_anggota');
+    } // Sesuaikan nama model/PK
     public function verifikator()
     {
-        // Sesuaikan 'App\Models\User' jika nama model/namespace berbeda
         return $this->belongsTo(User::class, 'verifikator_id');
     }
-
     public function pjInput()
     {
-        // Sesuaikan 'App\Models\User' jika nama model/namespace berbeda
         return $this->belongsTo(User::class, 'pj_input_id');
     }
 }

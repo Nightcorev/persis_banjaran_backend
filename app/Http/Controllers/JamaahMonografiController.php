@@ -39,47 +39,47 @@ class JamaahMonografiController extends Controller
      * )
      */
 
-     public function index(Request $request)
-     {
-         $perPage = $request->input('perPage');
-         $page = $request->input('page', 1);
-         $searchTerm = $request->input('searchTerm', '');
-     
-         $query = MasterJamaahModel::with([
-             'musyawarah' => function ($query) {
-                 $query->orderBy('id_musyawarah', 'desc')->where('aktif', 1);
-             },
-             'musyawarah.musyawarah_detail' => function ($query) {
-                 $query->where('jabatan', 'Ketua');
-             },
-             'musyawarah.musyawarah_detail.anggota',
-             'monografi'
-         ]);
-     
-         // Filter pencarian berdasarkan nama jamaah
-         if (!empty($searchTerm)) {
-             $query->whereRaw('LOWER(nama_jamaah) LIKE ?', ["%" . strtolower($searchTerm) . "%"]);
-         }
-     
-         // Jika perPage tidak diset, ambil semua data
-         if ($perPage) {
-             $paginatedData = $query->paginate($perPage);
-         } else {
-             $paginatedData = $query->paginate($query->count());
-         }
-     
-         // Transform data untuk menambahkan jumlah_persis ke dalam setiap item
-         $transformedData = $paginatedData->through(function ($item) {
-             $item->jumlah_persis = $item->jumlahPersis();
-             return $item;
-         });
-     
-         return response()->json([
-             'success' => true,
-             'message' => 'Data Jamaah Monografi',
-             'data' => $transformedData
-         ]);
-     }
+         public function index(Request $request)
+    {
+        $perPage = $request->input('perPage');
+        $page = $request->input('page', 1);
+        $searchTerm = $request->input('searchTerm', '');
+    
+        $query = MasterJamaahModel::with([
+            'musyawarah' => function ($query) {
+                $query->orderBy('id_musyawarah', 'desc')->where('aktif', 1);
+            },
+            'musyawarah.musyawarah_detail' => function ($query) {
+                $query->where('jabatan', 'Ketua');
+            },
+            'musyawarah.musyawarah_detail.anggota',
+            'monografi'
+        ])->orderBy('id_master_jamaah', 'asc'); // Add this line for sorting
+    
+        // Filter pencarian berdasarkan nama jamaah
+        if (!empty($searchTerm)) {
+            $query->whereRaw('LOWER(nama_jamaah) LIKE ?', ["%" . strtolower($searchTerm) . "%"]);
+        }
+    
+        // Jika perPage tidak diset, ambil semua data
+        if ($perPage) {
+            $paginatedData = $query->paginate($perPage);
+        } else {
+            $paginatedData = $query->paginate($query->count());
+        }
+    
+        // Transform data untuk menambahkan jumlah_persis ke dalam setiap item
+        $transformedData = $paginatedData->through(function ($item) {
+            $item->jumlah_persis = $item->jumlahPersis();
+            return $item;
+        });
+    
+        return response()->json([
+            'success' => true,
+            'message' => 'Data Jamaah Monografi',
+            'data' => $transformedData
+        ]);
+    }
 
     /**
      * @OA\Get(

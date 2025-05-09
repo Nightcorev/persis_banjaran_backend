@@ -199,4 +199,4 @@ Route::get('/musyawarah/detail/{id_musyawarah}/{id_detail}', [MusyawarahControll
 
 Route::post('/jamaah-monografi', [JamaahMonografiController::class, 'store']);
 Route::put('/jamaah-monografi/{id_jamaah}', [JamaahMonografiController::class, 'update']);
-Route::delete('/jamaah-monografi/{id_jamaah}', [JamaahMonografiController::class, 'destroy']);
+Route::delete('/delete-jamaah/{id_jamaah}', [JamaahMonografiController::class, 'destroy']);

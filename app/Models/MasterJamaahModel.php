@@ -4,6 +4,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @OA\Schema(
@@ -21,13 +22,25 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class MasterJamaahModel extends Model
 {
     use HasFactory;
+
+    public $timestamps = false;
     protected $table = 't_master_jamaah';
     protected $primaryKey = 'id_master_jamaah';
+
     protected $fillable = [
         'nama_jamaah',
-        'tgl_pelaksanaan',
-        'tgl_akhir_jihad',
-        'alamat'
+        'alamat',
+        'aktif',
+        'lokasi_map',
+        'lokasi_lat',
+        'lokasi_long',
+        'id_otonom'
+    ];
+
+    protected $casts = [
+        'aktif' => 'boolean',
+        'lokasi_lat' => 'float',
+        'lokasi_long' => 'float'
     ];
 
     public function anggota()

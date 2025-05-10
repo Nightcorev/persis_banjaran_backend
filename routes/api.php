@@ -198,3 +198,6 @@ Route::delete('/musyawarah/detail/{id_musyawarah}/{id_detail}', [MusyawarahContr
 Route::get('/musyawarah/detail/{id_musyawarah}/{id_detail}', [MusyawarahController::class, 'showDetail']);
 
 Route::get('/dataUsers', [UserController::class, 'getDataUsers']);
+Route::post('/jamaah-monografi', [JamaahMonografiController::class, 'store']);
+Route::put('/jamaah-monografi/{id_jamaah}', [JamaahMonografiController::class, 'update']);
+Route::delete('/delete-jamaah/{id_jamaah}', [JamaahMonografiController::class, 'destroy']);

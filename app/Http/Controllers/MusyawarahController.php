@@ -75,17 +75,24 @@ class MusyawarahController extends Controller
             'aktif' => 'required|boolean',
             'id_anggota' => 'required|integer', // ID anggota yang akan menjadi ketua
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json(['status' => 400, 'errors' => $validator->errors()], 400);
         }
-
+    
         // Begin transaction
         \DB::beginTransaction();
         try {
+            // If new musyawarah is active, deactivate all other active musyawarah
+            if ($request->aktif) {
+                MusyawarahModel::where('id_master_jamaah', $request->id_master_jamaah)
+                    ->where('aktif', true)
+                    ->update(['aktif' => false]);
+            }
+    
             // Create musyawarah
             $musyawarah = MusyawarahModel::create($validator->validated());
-
+    
             // Create musyawarah detail for ketua
             MusyawarahDetailModel::create([
                 'id_musyawarah' => $musyawarah->id_musyawarah,
@@ -93,18 +100,18 @@ class MusyawarahController extends Controller
                 'jabatan' => 'Ketua',
                 'aktif' => true
             ]);
-
+    
             \DB::commit();
-
+    
             // Load relations for response
             $musyawarah->load(['musyawarah_detail.anggota']);
-
+    
             return response()->json([
                 'status' => 201, 
                 'message' => 'Musyawarah created successfully',
                 'data' => $musyawarah
             ], 201);
-
+    
         } catch (\Exception $e) {
             \DB::rollback();
             return response()->json([
@@ -134,9 +141,31 @@ class MusyawarahController extends Controller
             return response()->json(['status' => 400, 'errors' => $validator->errors()], 400);
         }
 
-        $musyawarah->update($validator->validated());
+        // Begin transaction
+        \DB::beginTransaction();
+        try {
+            // If updating to active status, deactivate other active musyawarah
+            if ($request->aktif && !$musyawarah->aktif) {
+                MusyawarahModel::where('id_master_jamaah', $musyawarah->id_master_jamaah)
+                    ->where('id_musyawarah', '!=', $id)
+                    ->where('aktif', true)
+                    ->update(['aktif' => false]);
+            }
 
-        return response()->json(['status' => 200, 'data' => $musyawarah], 200);
+            $musyawarah->update($validator->validated());
+
+            \DB::commit();
+
+            return response()->json(['status' => 200, 'data' => $musyawarah], 200);
+
+        } catch (\Exception $e) {
+            \DB::rollback();
+            return response()->json([
+                'status' => 500,
+                'message' => 'Failed to update musyawarah',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy($id)

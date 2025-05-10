@@ -1161,7 +1161,8 @@ class AnggotaController extends Controller
             't_anggota.nik',
             't_anggota.nama_lengkap',
             't_anggota.email'
-        )->orderBy('t_anggota.nama_lengkap', 'asc');
+        )->orderBy('t_anggota.nama_lengkap', 'asc')
+            ->where('t_anggota.status_aktif', 1);
 
         // Tambahkan filter pencarian jika ada
         if (!empty($searchTerm)) {

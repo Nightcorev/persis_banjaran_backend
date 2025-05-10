@@ -196,3 +196,5 @@ Route::post('/musyawarah/detail/{id_musyawarah}', [MusyawarahController::class, 
 Route::put('/musyawarah/detail/{id_musyawarah}/{id_detail}', [MusyawarahController::class, 'updateDetail']);
 Route::delete('/musyawarah/detail/{id_musyawarah}/{id_detail}', [MusyawarahController::class, 'destroyDetail']);
 Route::get('/musyawarah/detail/{id_musyawarah}/{id_detail}', [MusyawarahController::class, 'showDetail']);
+
+Route::get('/dataUsers', [UserController::class, 'getDataUsers']);

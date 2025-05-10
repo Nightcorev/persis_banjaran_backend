@@ -413,4 +413,38 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    public function getDataUsers()
+    {
+        try {
+            // Menggunakan model User dengan relasi ke role dan anggota
+            $users = User::with([
+                'role:id,name_role', // Relasi ke tabel roles
+                'anggota:id_anggota,id_master_jamaah,nama_lengkap', // Relasi ke tabel t_anggota
+                'anggota.master_jamaah:id_master_jamaah,nama_jamaah' // Relasi ke tabel t_master_jamaah melalui anggota
+            ])->get();
+
+            // Format data yang akan dikembalikan
+            $formattedUsers = $users->map(function ($user) {
+                return [
+                    'username' => $user->username,
+                    'password' => $user->password, // Pastikan ini aman, jika tidak perlu tampilkan, hapus
+                    'nama_jamaah' => $user->anggota->master_jamaah->nama_jamaah ?? null,
+                    'name_role' => $user->role->name_role ?? null,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Data user berhasil diambil.',
+                'data' => $formattedUsers
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil data user.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

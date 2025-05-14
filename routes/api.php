@@ -191,6 +191,7 @@ Route::put('/edit_musyawarah/{id}', [MusyawarahController::class, 'update']);
 Route::delete('/delete_musyawarah/{id}', [MusyawarahController::class, 'destroy']);
 Route::get('/data_jamaah', [JamaahMonografiController::class, 'index']);
 Route::get('/anggota/by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'indexByJamaah']);
+Route::get('/musyawarah/pimpinan-cabang', [MusyawarahController::class, 'indexPimpinanCabang']);
 
 Route::post('/musyawarah/detail/{id_musyawarah}', [MusyawarahController::class, 'addDetail']);
 Route::put('/musyawarah/detail/{id_musyawarah}/{id_detail}', [MusyawarahController::class, 'updateDetail']);

@@ -15,7 +15,22 @@ class MusyawarahModel extends Model
         'id_master_jamaah',
         'tgl_pelaksanaan',
         'tgl_akhir_jihad',
-        'aktif'
+        'aktif',
+        'tingkat_musyawarah',
+        'no_sk'
+    ];
+
+    protected $casts = [
+        'id_musyawarah' => 'integer',
+        'id_master_jamaah' => 'integer',
+        'tgl_pelaksanaan' => 'date',
+        'tgl_akhir_jihad' => 'date',
+        'aktif' => 'boolean',
+        'no_sk' => 'string'
+    ];
+
+    protected $attributes = [
+        'tingkat_musyawarah' => 'jamaah'
     ];
 
     protected static function boot()

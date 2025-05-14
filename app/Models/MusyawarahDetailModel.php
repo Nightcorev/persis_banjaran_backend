@@ -15,8 +15,7 @@ class MusyawarahDetailModel extends Model
         'id_musyawarah',
         'id_anggota',
         'jabatan',
-        'aktif',
-        'no_sk'
+        'aktif'
     ];    
 
     public function musyawarah()

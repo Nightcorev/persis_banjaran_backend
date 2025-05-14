@@ -39,7 +39,7 @@ class JamaahMonografiController extends Controller
      * )
      */
 
-         public function index(Request $request)
+    public function index(Request $request)
     {
         $perPage = $request->input('perPage');
         $page = $request->input('page', 1);
@@ -147,7 +147,7 @@ class JamaahMonografiController extends Controller
             'musyawarah.musyawarah_detail.anggota',
             'monografi'
         ])->find($id_master_jamaah);
-
+    
         if (!$jamaah) {
             return response()->json([
                 'success' => false,
@@ -155,7 +155,10 @@ class JamaahMonografiController extends Controller
                 'data' => null,
             ], 404);
         }
-
+    
+        // Add jumlah_persis calculation
+        $jamaah->jum_persis = $jamaah->jumlahPersis();
+    
         return response()->json([
             'success' => true,
             'message' => 'Detail Data Jamaah Monografi',

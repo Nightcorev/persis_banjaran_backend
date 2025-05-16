@@ -195,6 +195,7 @@ Route::delete('/delete-jamaah/{id_jamaah}', [JamaahMonografiController::class, '
 
 
 Route::get('/anggota/detailed', [AnggotaController::class, 'indexDetailed']);
+Route::post('/anggota/export-excel', [AnggotaController::class, 'exportExcel']);
 
 Route::get('/anggota', [AnggotaController::class, 'index']);
     Route::get('/anggota/all', [AnggotaController::class, 'selectAll']);

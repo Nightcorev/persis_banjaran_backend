@@ -7,6 +7,7 @@ use App\Imports\IuranImport;
 use Illuminate\Http\Request;
 use App\Models\IuranLog;
 use App\Models\AnggotaModel;
+use App\Models\MasterJamaahModel;
 use App\Models\TahunAktif;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -837,5 +838,73 @@ class IuranController extends Controller
             Log::error("Error processing import file: " . $e->getMessage(), ['trace' => $e->getTraceAsString()]); // Log trace
             return response()->json(['message' => 'Terjadi kesalahan saat memproses file impor.'], 500);
         }
+    }
+
+    public function getRekapJamaah(Request $request)
+    {
+        $validated = $request->validate([
+            'tahun' => 'required|integer|digits:4',
+        ]);
+        $tahun = $validated['tahun'];
+        $monthlyFee = config('iuran.monthly_fee', 10000);
+        $totalMonthsInYear = 12;
+
+        Log::info("Rekap Jamaah - Tahun diminta: {$tahun}");
+
+        $jamaahs = MasterJamaahModel::withCount(['anggota as jumlah_anggota' => function ($query) {
+            // Hitung hanya anggota yang aktif jika ada kolom status_aktif
+            $query->where('status_aktif', 1);
+        }])
+            ->with(['anggota' => function ($query) use ($tahun) { // Eager load anggota
+                // Eager load iuran log yang verified untuk anggota tersebut pada tahun terpilih
+                $query->with(['iuranLogs' => function ($logQuery) use ($tahun) {
+                    $logQuery->where('tahun', $tahun)
+                        ->where('status', 'Verified')
+                        ->select('anggota_id', 'nominal', 'paid_months'); // Ambil kolom yg relevan
+                }]);
+                // ->where('status_aktif', 1); // Jika perlu filter anggota aktif
+            }])
+            ->orderBy('nama_jamaah')
+            ->get();
+
+        $rekapData = $jamaahs->map(function ($jamaah) use ($monthlyFee, $totalMonthsInYear) {
+            $totalSudahDibayarJamaah = 0;
+            $totalAnggotaDiJamaah = $jamaah->jumlah_anggota; // Hasil dari withCount
+
+            foreach ($jamaah->anggota as $anggota) {
+                // Hitung total verified dari paid_months
+                // Ini lebih akurat jika nominal di log bisa bervariasi per transaksi
+                $totalBulanVerifiedAnggota = 0;
+                foreach ($anggota->iuranLogs as $log) {
+                    $paidMonthsInLog = collect($log->paid_months ?? [])->map(fn($m) => (int)$m)->filter(fn($m) => $m > 0);
+                    $totalBulanVerifiedAnggota += $paidMonthsInLog->count();
+                }
+                // Pastikan tidak melebihi 12 bulan
+                $totalSudahDibayarJamaah += min($totalBulanVerifiedAnggota, $totalMonthsInYear) * $monthlyFee;
+            }
+
+            // Total seharusnya dibayar oleh jamaah ini dalam setahun
+            $totalHarusBayarJamaahSetahun = $totalAnggotaDiJamaah * $totalMonthsInYear * $monthlyFee;
+            $totalBelumDibayarJamaah = max(0, $totalHarusBayarJamaahSetahun - $totalSudahDibayarJamaah);
+
+            return [
+                'id_jamaah' => $jamaah->id_master_jamaah, // Pastikan nama PK Jamaah benar
+                'nama_jamaah' => $jamaah->nama_jamaah,
+                'jumlah_anggota' => $totalAnggotaDiJamaah,
+                'total_sudah_dibayar' => $totalSudahDibayarJamaah,
+                'total_belum_dibayar' => $totalBelumDibayarJamaah,
+            ];
+        });
+
+        // Jika Anda ingin paginasi rekap jamaah (biasanya tidak terlalu banyak jamaah)
+        // $perPage = $request->input('per_page', 100); // Tampilkan semua by default
+        // $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
+        // $currentPageItems = $rekapData->slice(($currentPage - 1) * $perPage, $perPage)->all();
+        // $paginatedItems = new \Illuminate\Pagination\LengthAwarePaginator($currentPageItems, $rekapData->count(), $perPage, $currentPage, [
+        //     'path' => \Illuminate\Pagination\Paginator::resolveCurrentPath(),
+        // ]);
+        // return response()->json($paginatedItems);
+
+        return response()->json($rekapData); // Kembalikan sebagai array biasa
     }
 }

@@ -6,6 +6,7 @@ use App\Models\MusyawarahModel;
 use App\Models\MusyawarahDetailModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class MusyawarahController extends Controller
 {
@@ -69,30 +70,41 @@ class MusyawarahController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'id_master_jamaah' => 'required|integer',
+            'id_master_jamaah' => 'nullable|integer',
             'tgl_pelaksanaan' => 'required|date',
             'tgl_akhir_jihad' => 'required|date',
             'aktif' => 'required|boolean',
-            'id_anggota' => 'required|integer', // ID anggota yang akan menjadi ketua
+            'tingkat_musyawarah' => 'nullable|string',
+            'no_sk' => 'nullable|string|max:100',
+            'id_anggota' => 'required|integer'
         ]);
-    
+
         if ($validator->fails()) {
-            return response()->json(['status' => 400, 'errors' => $validator->errors()], 400);
+            return response()->json([
+                'status' => 400, 
+                'errors' => $validator->errors()
+            ], 400);
         }
-    
-        // Begin transaction
-        \DB::beginTransaction();
+
+        DB::beginTransaction();
         try {
-            // If new musyawarah is active, deactivate all other active musyawarah
+            // If new musyawarah is active, deactivate others
             if ($request->aktif) {
                 MusyawarahModel::where('id_master_jamaah', $request->id_master_jamaah)
                     ->where('aktif', true)
                     ->update(['aktif' => false]);
             }
-    
-            // Create musyawarah
-            $musyawarah = MusyawarahModel::create($validator->validated());
-    
+
+            // Create musyawarah with default tingkat_musyawarah if not provided
+            $musyawarah = MusyawarahModel::create([
+                'id_master_jamaah' => $request->id_master_jamaah,
+                'tgl_pelaksanaan' => $request->tgl_pelaksanaan,
+                'tgl_akhir_jihad' => $request->tgl_akhir_jihad,
+                'aktif' => $request->aktif,
+                'tingkat_musyawarah' => $request->tingkat_musyawarah ?? 'jamaah',
+                'no_sk' => $request->no_sk
+            ]);
+
             // Create musyawarah detail for ketua
             MusyawarahDetailModel::create([
                 'id_musyawarah' => $musyawarah->id_musyawarah,
@@ -100,20 +112,19 @@ class MusyawarahController extends Controller
                 'jabatan' => 'Ketua',
                 'aktif' => true
             ]);
-    
-            \DB::commit();
-    
-            // Load relations for response
-            $musyawarah->load(['musyawarah_detail.anggota']);
-    
+
+            DB::commit();
+
+            $musyawarah->load(['musyawarah_detail.anggota', 'master_jamaah']);
+
             return response()->json([
-                'status' => 201, 
+                'status' => 201,
                 'message' => 'Musyawarah created successfully',
                 'data' => $musyawarah
             ], 201);
-    
+
         } catch (\Exception $e) {
-            \DB::rollback();
+            DB::rollback();
             return response()->json([
                 'status' => 500,
                 'message' => 'Failed to create musyawarah',
@@ -127,25 +138,31 @@ class MusyawarahController extends Controller
         $musyawarah = MusyawarahModel::find($id);
 
         if (!$musyawarah) {
-            return response()->json(['status' => 404, 'message' => 'Musyawarah not found'], 404);
+            return response()->json([
+                'status' => 404, 
+                'message' => 'Musyawarah not found'
+            ], 404);
         }
 
         $validator = Validator::make($request->all(), [
-            'id_master_jamaah' => 'sometimes|required|integer',
+            'id_master_jamaah' => 'nullable|integer',
             'tgl_pelaksanaan' => 'sometimes|required|date',
-            'tgl_akhir_jihad' => 'nullable|date',
-            'aktif' => 'required|boolean',
+            'tgl_akhir_jihad' => 'sometimes|required|date',
+            'aktif' => 'sometimes|required|boolean',
+            'tingkat_musyawarah' => 'nullable|string',
+            'no_sk' => 'nullable|string|max:100'
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['status' => 400, 'errors' => $validator->errors()], 400);
+            return response()->json([
+                'status' => 400, 
+                'errors' => $validator->errors()
+            ], 400);
         }
 
-        // Begin transaction
-        \DB::beginTransaction();
+        DB::beginTransaction();
         try {
-            // If updating to active status, deactivate other active musyawarah
-            if ($request->aktif && !$musyawarah->aktif) {
+            if ($request->has('aktif') && $request->aktif && !$musyawarah->aktif) {
                 MusyawarahModel::where('id_master_jamaah', $musyawarah->id_master_jamaah)
                     ->where('id_musyawarah', '!=', $id)
                     ->where('aktif', true)
@@ -154,12 +171,18 @@ class MusyawarahController extends Controller
 
             $musyawarah->update($validator->validated());
 
-            \DB::commit();
+            DB::commit();
 
-            return response()->json(['status' => 200, 'data' => $musyawarah], 200);
+            $musyawarah->load(['musyawarah_detail.anggota', 'master_jamaah']);
+
+            return response()->json([
+                'status' => 200,
+                'message' => 'Musyawarah updated successfully',
+                'data' => $musyawarah
+            ], 200);
 
         } catch (\Exception $e) {
-            \DB::rollback();
+            DB::rollback();
             return response()->json([
                 'status' => 500,
                 'message' => 'Failed to update musyawarah',
@@ -329,5 +352,58 @@ class MusyawarahController extends Controller
         ], 200);
     }
 
+    public function indexPimpinanCabang(Request $request)
+    {
+        $perPage = $request->input('perPage', 33);
+        $page = $request->input('page', 1);
+        $searchTerm = $request->input('searchTerm', '');
+        
+        $query = MusyawarahModel::with(['master_jamaah', 'musyawarah_detail.anggota'])
+            ->where('tingkat_musyawarah', 'pimpinan_cabang')
+            ->when($searchTerm, function ($query, $searchTerm) {
+                return $query->whereHas('master_jamaah', function($q) use ($searchTerm) {
+                    $q->whereRaw('LOWER(nama_jamaah) LIKE ?', ["%" . strtolower($searchTerm) . "%"]);
+                });
+            })
+            ->orderBy('id_musyawarah', 'desc');
     
+        $musyawarah = $query->paginate($perPage, ['*'], 'page', $page);
+    
+        // Transform the result to include only the ketua information
+        $musyawarah->getCollection()->transform(function ($item) {
+            // Sort the musyawarah_detail relationship to prioritize key positions
+            $sortedDetails = $item->musyawarah_detail->sortBy(function ($detail) {
+                // Define jabatan priority order
+                $jabatanPriority = [
+                    'ketua' => 1,
+                    'sekretaris' => 2,
+                    'bendahara' => 3,
+                ];
+                
+                $jabatan = strtolower($detail->jabatan ?? '');
+                return $jabatanPriority[$jabatan] ?? 999;
+            })->values();
+            
+            $item->setRelation('musyawarah_detail', $sortedDetails);
+            
+            // Find the ketua position
+            $ketua = $sortedDetails->firstWhere(function($detail) {
+                return strtolower($detail->jabatan) === 'ketua';
+            });
+            
+            // Add only ketua information
+            $item->pimpinan = $ketua ? [
+                'jabatan' => $ketua->jabatan,
+                'nama' => $ketua->anggota->nama_lengkap ?? 'N/A'
+            ] : null;
+            
+            return $item;
+        });
+    
+        return response()->json([
+            'status' => 200, 
+            'message' => 'Daftar Musyawarah Pimpinan Cabang',
+            'data' => $musyawarah
+        ], 200);
+    }
 }

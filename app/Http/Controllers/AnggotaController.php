@@ -1428,4 +1428,161 @@ class AnggotaController extends Controller
 
         return response()->json(['success' => false, 'message' => 'Upload gagal'], 400);
     }
+
+    public function indexDetailed()
+    {
+        try {
+            $anggotaIds = AnggotaModel::pluck('id_anggota')->toArray();
+    
+            $anggotaCollection = collect();
+            
+            foreach ($anggotaIds as $id) {
+                try {
+                    // Validate that ID is a valid integer
+                    if (!is_numeric($id) || (int) $id != $id) {
+                        \Log::warning("Invalid anggota ID: {$id}");
+                        continue;
+                    }
+                    
+                    $anggota = AnggotaModel::find($id);
+                    
+                    if (!$anggota) {
+                        \Log::warning("Anggota not found for ID: {$id}");
+                        continue;
+                    }
+                    
+                    $keluarga = AnggotaKeluargaModel::where('id_anggota', $anggota->id_anggota)->first();
+                    $pendidikan = AnggotaPendidikanModel::where('id_anggota', $anggota->id_anggota)->first();
+                    $pekerjaan = AnggotaPekerjaanModel::where('id_anggota', $anggota->id_anggota)->first();
+                    $keterampilan = AnggotaKeterampilanModel::where('id_anggota', $anggota->id_anggota)->first();
+                    $minat = AnggotaMinatModel::where('id_anggota', $anggota->id_anggota)->get();
+                    $organisasi = AnggotaOrganisasiModel::where('id_anggota', $anggota->id_anggota)->first();
+                    
+                    $jamaah = $anggota->id_master_jamaah ? 
+                        MasterJamaahModel::find($anggota->id_master_jamaah) : null;
+                        
+                    $otonom = $anggota->id_otonom ? 
+                        MasterOtonomModel::find($anggota->id_otonom) : null;
+                        
+                    $tingkatPendidikan = ($pendidikan && $pendidikan->id_tingkat_pendidikan) ? 
+                        TingkatPendidikanModel::find($pendidikan->id_tingkat_pendidikan) : null;
+                        
+                    $masterPekerjaan = ($pekerjaan && $pekerjaan->id_master_pekerjaan) ? 
+                        MasterPekerjaanModel::find($pekerjaan->id_master_pekerjaan) : null;
+                        
+                    $masterKeterampilan = ($keterampilan && $keterampilan->id_master_keterampilan) ? 
+                        MasterKeterampilanModel::find($keterampilan->id_master_keterampilan) : null;
+                    
+                    $masterMinat = collect();
+                    if ($minat->isNotEmpty()) {
+                        $minatIds = $minat->pluck('id_master_minat')->filter()->values();
+                        if ($minatIds->isNotEmpty()) {
+                            $masterMinat = MasterMinatModel::whereIn('id_master_minat', $minatIds)->get();
+                        }
+                    }
+                    
+                    $statusMapping = [
+                        1 => 'Aktif',
+                        0 => 'Tidak Aktif',
+                        2 => 'Meninggal Dunia',
+                        3 => 'Mutasi'
+                    ];
+                    
+                    $detailedAnggota = [
+                        'id_anggota' => $anggota->id_anggota,
+                        'personal' => [
+                            // Remove photo URL as requested
+                            'nomorAnggota' => $anggota->nik ?? null,
+                            'nomorKTP' => $anggota->nomor_ktp ?? null,
+                            'namaLengkap' => $anggota->nama_lengkap ?? null,
+                            'tempatLahir' => $anggota->tempat_lahir ?? null,
+                            'tanggalLahir' => $anggota->tanggal_lahir ?? null,
+                            'statusMerital' => $anggota->status_merital ?? null,
+                            'nomorTelepon' => $anggota->no_telp ?? null,
+                            'nomorWA' => $anggota->no_wa ?? null,
+                            'alamat' => $anggota->alamat ?? null,
+                            'alamatTinggal' => $anggota->alamat_tinggal ?? null,
+                            'otonom' => $anggota->id_otonom ?? null,
+                            'namaOtonom' => $otonom->nama_otonom ?? null,
+                            'jamaah' => $anggota->id_master_jamaah ?? null,
+                            'namaJamaah' => $jamaah->nama_jamaah ?? null,
+                            'statusAktif' => $anggota->status_aktif ?? null,
+                            'namaStatusAktif' => $statusMapping[$anggota->status_aktif] ?? null,
+                            'tahunMasuk' => $anggota->tahun_masuk_anggota ?? null,
+                            'masaAktif' => $anggota->masa_aktif_anggota ?? null,
+                            'kajianRutin' => $anggota->kajian_rutin ?? null,
+                            'tahunHaji' => $anggota->tahun_haji ?? null,
+                            'keterangan' => $anggota->keterangan ?? null,
+                        ],
+                        'family' => [
+                            'jumlahTanggungan' => $keluarga->jumlah_tanggungan ?? null,
+                            'namaIstri' => $keluarga->nama_istri ?? null,
+                            'anggotaPersistri' => $keluarga->anggota_persistri ?? null,
+                            'statusKepemilikanRumah' => $keluarga->status_kepemilikan_rumah ?? null,
+                            'jumlaSeluruhAnak' => $keluarga->jumlah_seluruh_anak ?? null,
+                            'jumlaAnakPemuda' => $keluarga->jumlah_anak_pemuda ?? null,
+                            'jumlaAnakPemudi' => $keluarga->jumlah_anak_pemudi ?? null,
+                        ],
+                        'education' => [
+                            'tingkat' => $pendidikan->id_tingkat_pendidikan ?? null,
+                            'namaTingkat' => $tingkatPendidikan->pendidikan ?? null,
+                            'namaSekolah' => $pendidikan->instansi ?? null,
+                            'jurusan' => $pendidikan->jurusan ?? null,
+                            'tahunMasuk' => $pendidikan->tahun_masuk ?? null,
+                            'tahunKeluar' => $pendidikan->tahun_keluar ?? null,
+                            'jenisPendidikan' => $pendidikan->jenis_pendidikan ?? null,
+                        ],
+                        'work' => [
+                            'pekerjaan' => $pekerjaan->id_master_pekerjaan ?? null,
+                            'namaPekerjaan' => $masterPekerjaan->nama_pekerjaan ?? null,
+                            'pekerjaanLainnya' => $pekerjaan->lainnya ?? null,
+                            'namaInstansi' => $pekerjaan->nama_instasi ?? null,
+                            'deskripsiPekerjaan' => $pekerjaan->deskripsi_pekerjaan ?? null,
+                            'pendapatan' => $pekerjaan->pendapatan ?? null,
+                        ],
+                        'skill' => [
+                            'keterampilan' => $keterampilan->id_master_keterampilan ?? null,
+                            'namaKeterampilan' => $masterKeterampilan->nama_keterampilan ?? null,
+                            'keterampilanLainnya' => $keterampilan->lainnya ?? null,
+                            'deskripsiKeterampilan' => $keterampilan->deskripsi ?? null,
+                        ],
+                        'interest' => $minat->map(function ($item) use ($masterMinat) {
+                            if ($item->id_master_minat) {
+                                $namaMinat = $masterMinat->where('id_master_minat', $item->id_master_minat)->first();
+                                return [
+                                    'minat' => $namaMinat->nama_minat ?? null,
+                                    'minatLainnya' => $item->lainnya ?? null,
+                                ];
+                            }
+                            return [
+                                'minat' => null,
+                                'minatLainnya' => $item->lainnya ?? null,
+                            ];
+                        }),
+                        'organization' => [
+                            'keterlibatanOrganisasi' => $organisasi->keterlibatan_organisasi ?? null,
+                            'namaOrganisasi' => $organisasi->nama_organisasi ?? null,
+                        ]
+                    ];
+                    
+                    $anggotaCollection->push($detailedAnggota);
+                } catch (\Exception $e) {
+                    \Log::error("Error processing anggota ID {$id}: " . $e->getMessage());
+                    continue;
+                }
+            }
+            
+            return response()->json([
+                'status' => 200,
+                'data' => $anggotaCollection
+            ], 200);
+            
+        } catch (\Exception $e) {
+            \Log::error("Error in indexDetailed: " . $e->getMessage());
+            return response()->json([
+                'status' => 500,
+                'message' => 'Terjadi kesalahan saat mengambil data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

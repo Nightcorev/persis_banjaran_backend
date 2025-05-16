@@ -36,21 +36,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth.toke
 // Routes yang membutuhkan auth.token middleware
 Route::middleware('auth.token')->group(function () {
     // Route untuk Anggota
-    Route::get('/anggota', [AnggotaController::class, 'index']);
-    Route::get('/anggota/all', [AnggotaController::class, 'selectAll']);
-    Route::get('/anggota/{id}', [AnggotaController::class, 'show']);
+    
 
-    Route::post('/anggota', [AnggotaController::class, 'store'])
-        ->middleware('permission:data_anggota,add');
-    Route::put('/anggota/{id}', [AnggotaController::class, 'update'])
-        ->middleware('permission:data_anggota,edit');
-    Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy'])
-        ->middleware('permission:data_anggota,delete');
-    // Route::get('/anggota/by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'indexByJamaah']);
-
-    Route::get('/anggota/choice_by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'anggotaByJamaah']);
-
-    Route::post('/upload-foto', [AnggotaController::class, 'uploadFoto']);
+   
 
     // Route untuk Data Jamaah dan Statistik
     // Route::get('/data_jamaah', [JamaahMonografiController::class, 'index']);
@@ -202,3 +190,24 @@ Route::get('/dataUsers', [UserController::class, 'getDataUsers']);
 Route::post('/jamaah-monografi', [JamaahMonografiController::class, 'store']);
 Route::put('/jamaah-monografi/{id_jamaah}', [JamaahMonografiController::class, 'update']);
 Route::delete('/delete-jamaah/{id_jamaah}', [JamaahMonografiController::class, 'destroy']);
+
+
+
+
+Route::get('/anggota/detailed', [AnggotaController::class, 'indexDetailed']);
+Route::post('/anggota/export-excel', [AnggotaController::class, 'exportExcel']);
+
+Route::get('/anggota', [AnggotaController::class, 'index']);
+    Route::get('/anggota/all', [AnggotaController::class, 'selectAll']);
+    Route::get('/anggota/{id}', [AnggotaController::class, 'show']);
+ Route::post('/anggota', [AnggotaController::class, 'store'])
+        ->middleware('permission:data_anggota,add');
+    Route::put('/anggota/{id}', [AnggotaController::class, 'update'])
+        ->middleware('permission:data_anggota,edit');
+    Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy'])
+        ->middleware('permission:data_anggota,delete');
+    // Route::get('/anggota/by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'indexByJamaah']);
+
+    Route::get('/anggota/choice_by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'anggotaByJamaah']);
+
+    Route::post('/upload-foto', [AnggotaController::class, 'uploadFoto']);

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -43,8 +44,11 @@ class MasterJamaahModel extends Model
         'lokasi_long' => 'float'
     ];
 
+
     public function anggota()
     {
+        // Argumen kedua adalah foreign key di tabel t_anggota (anggota)
+        // Argumen ketiga adalah local key di tabel t_master_jamaah (jamaah)
         return $this->hasMany(AnggotaModel::class, 'id_master_jamaah', 'id_master_jamaah');
     }
 
@@ -81,9 +85,7 @@ class MasterJamaahModel extends Model
     public function jumlahPersis()
     {
         return AnggotaModel::where('id_master_jamaah', $this->id_master_jamaah)
-                           ->where('status_aktif', 1)
-                           ->count();
+            ->where('status_aktif', 1)
+            ->count();
     }
-
 }
-

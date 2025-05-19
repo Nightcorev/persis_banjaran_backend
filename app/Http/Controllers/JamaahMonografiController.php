@@ -9,6 +9,7 @@ use App\Models\AnggotaModel;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class JamaahMonografiController extends Controller
 {
@@ -44,7 +45,7 @@ class JamaahMonografiController extends Controller
         $perPage = $request->input('perPage');
         $page = $request->input('page', 1);
         $searchTerm = $request->input('searchTerm', '');
-    
+
         $query = MasterJamaahModel::with([
             'musyawarah' => function ($query) {
                 $query->orderBy('id_musyawarah', 'desc')->where('aktif', 1);
@@ -55,25 +56,25 @@ class JamaahMonografiController extends Controller
             'musyawarah.musyawarah_detail.anggota',
             'monografi'
         ])->orderBy('id_master_jamaah', 'asc'); // Add this line for sorting
-    
+
         // Filter pencarian berdasarkan nama jamaah
         if (!empty($searchTerm)) {
             $query->whereRaw('LOWER(nama_jamaah) LIKE ?', ["%" . strtolower($searchTerm) . "%"]);
         }
-    
+
         // Jika perPage tidak diset, ambil semua data
         if ($perPage) {
             $paginatedData = $query->paginate($perPage);
         } else {
             $paginatedData = $query->paginate($query->count());
         }
-    
+
         // Transform data untuk menambahkan jumlah_persis ke dalam setiap item
         $transformedData = $paginatedData->through(function ($item) {
             $item->jumlah_persis = $item->jumlahPersis();
             return $item;
         });
-    
+
         return response()->json([
             'success' => true,
             'message' => 'Data Jamaah Monografi',
@@ -147,7 +148,7 @@ class JamaahMonografiController extends Controller
             'musyawarah.musyawarah_detail.anggota',
             'monografi'
         ])->find($id_master_jamaah);
-    
+
         if (!$jamaah) {
             return response()->json([
                 'success' => false,
@@ -155,10 +156,10 @@ class JamaahMonografiController extends Controller
                 'data' => null,
             ], 404);
         }
-    
+
         // Add jumlah_persis calculation
         $jamaah->jum_persis = $jamaah->jumlahPersis();
-    
+
         return response()->json([
             'success' => true,
             'message' => 'Detail Data Jamaah Monografi',
@@ -239,7 +240,7 @@ class JamaahMonografiController extends Controller
 
             return null;
         } catch (\Exception $e) {
-            \Log::error('Error extracting coordinates: ' . $e->getMessage());
+            Log::error('Error extracting coordinates: ' . $e->getMessage());
             return null;
         }
     }
@@ -277,7 +278,7 @@ class JamaahMonografiController extends Controller
 
             // Extract coordinates from Google Maps URL
             $coordinates = $this->extractCoordinates($request->master_jamaah['lokasi_map']);
-            
+
             if (!$coordinates) {
                 return response()->json([
                     'success' => false,
@@ -297,13 +298,13 @@ class JamaahMonografiController extends Controller
 
             // Create master jamaah
             $masterJamaah = MasterJamaahModel::create($masterJamaahData);
-                
+
             // Create monografi with same ID
             $monografiData = array_merge(
                 $request->monografi,
                 ['id_jamaah' => $masterJamaah->id_master_jamaah]
             );
-                
+
             $monografi = JamaahMonografiModel::create($monografiData);
 
             DB::commit();
@@ -316,7 +317,6 @@ class JamaahMonografiController extends Controller
                     'monografi' => $monografi
                 ]
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json([
@@ -413,7 +413,7 @@ class JamaahMonografiController extends Controller
 
             // Extract coordinates from Google Maps URL
             $coordinates = $this->extractCoordinates($request->master_jamaah['lokasi_map']);
-            
+
             if (!$coordinates) {
                 return response()->json([
                     'success' => false,
@@ -456,7 +456,6 @@ class JamaahMonografiController extends Controller
                     'monografi' => $monografi
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json([
@@ -501,7 +500,7 @@ class JamaahMonografiController extends Controller
             if ($masterJamaah->monografi) {
                 $masterJamaah->monografi->delete();
             }
-            
+
             // Then delete master jamaah
             $masterJamaah->delete();
 
@@ -511,7 +510,6 @@ class JamaahMonografiController extends Controller
                 'success' => true,
                 'message' => 'Data jamaah dan monografi berhasil dihapus'
             ]);
-
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json([

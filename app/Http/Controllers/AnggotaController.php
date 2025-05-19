@@ -1650,46 +1650,46 @@ class AnggotaController extends Controller
     {
         try {
             $anggotaIds = AnggotaModel::pluck('id_anggota')->toArray();
-    
+
             $anggotaCollection = collect();
-            
+
             foreach ($anggotaIds as $id) {
                 try {
                     // Validate that ID is a valid integer
                     if (!is_numeric($id) || (int) $id != $id) {
-                        \Log::warning("Invalid anggota ID: {$id}");
+                        Log::warning("Invalid anggota ID: {$id}");
                         continue;
                     }
-                    
+
                     $anggota = AnggotaModel::find($id);
-                    
+
                     if (!$anggota) {
-                        \Log::warning("Anggota not found for ID: {$id}");
+                        Log::warning("Anggota not found for ID: {$id}");
                         continue;
                     }
-                    
+
                     $keluarga = AnggotaKeluargaModel::where('id_anggota', $anggota->id_anggota)->first();
                     $pendidikan = AnggotaPendidikanModel::where('id_anggota', $anggota->id_anggota)->first();
                     $pekerjaan = AnggotaPekerjaanModel::where('id_anggota', $anggota->id_anggota)->first();
                     $keterampilan = AnggotaKeterampilanModel::where('id_anggota', $anggota->id_anggota)->first();
                     $minat = AnggotaMinatModel::where('id_anggota', $anggota->id_anggota)->get();
                     $organisasi = AnggotaOrganisasiModel::where('id_anggota', $anggota->id_anggota)->first();
-                    
-                    $jamaah = $anggota->id_master_jamaah ? 
+
+                    $jamaah = $anggota->id_master_jamaah ?
                         MasterJamaahModel::find($anggota->id_master_jamaah) : null;
-                        
-                    $otonom = $anggota->id_otonom ? 
+
+                    $otonom = $anggota->id_otonom ?
                         MasterOtonomModel::find($anggota->id_otonom) : null;
-                        
-                    $tingkatPendidikan = ($pendidikan && $pendidikan->id_tingkat_pendidikan) ? 
+
+                    $tingkatPendidikan = ($pendidikan && $pendidikan->id_tingkat_pendidikan) ?
                         TingkatPendidikanModel::find($pendidikan->id_tingkat_pendidikan) : null;
-                        
-                    $masterPekerjaan = ($pekerjaan && $pekerjaan->id_master_pekerjaan) ? 
+
+                    $masterPekerjaan = ($pekerjaan && $pekerjaan->id_master_pekerjaan) ?
                         MasterPekerjaanModel::find($pekerjaan->id_master_pekerjaan) : null;
-                        
-                    $masterKeterampilan = ($keterampilan && $keterampilan->id_master_keterampilan) ? 
+
+                    $masterKeterampilan = ($keterampilan && $keterampilan->id_master_keterampilan) ?
                         MasterKeterampilanModel::find($keterampilan->id_master_keterampilan) : null;
-                    
+
                     $masterMinat = collect();
                     if ($minat->isNotEmpty()) {
                         $minatIds = $minat->pluck('id_master_minat')->filter()->values();
@@ -1697,14 +1697,14 @@ class AnggotaController extends Controller
                             $masterMinat = MasterMinatModel::whereIn('id_master_minat', $minatIds)->get();
                         }
                     }
-                    
+
                     $statusMapping = [
                         1 => 'Aktif',
                         0 => 'Tidak Aktif',
                         2 => 'Meninggal Dunia',
                         3 => 'Mutasi'
                     ];
-                    
+
                     $detailedAnggota = [
                         'id_anggota' => $anggota->id_anggota,
                         'personal' => [
@@ -1780,21 +1780,20 @@ class AnggotaController extends Controller
                             'namaOrganisasi' => $organisasi->nama_organisasi ?? null,
                         ]
                     ];
-                    
+
                     $anggotaCollection->push($detailedAnggota);
                 } catch (\Exception $e) {
-                    \Log::error("Error processing anggota ID {$id}: " . $e->getMessage());
+                    Log::error("Error processing anggota ID {$id}: " . $e->getMessage());
                     continue;
                 }
             }
-            
+
             return response()->json([
                 'status' => 200,
                 'data' => $anggotaCollection
             ], 200);
-            
         } catch (\Exception $e) {
-            \Log::error("Error in indexDetailed: " . $e->getMessage());
+            Log::error("Error in indexDetailed: " . $e->getMessage());
             return response()->json([
                 'status' => 500,
                 'message' => 'Terjadi kesalahan saat mengambil data: ' . $e->getMessage()
@@ -1837,19 +1836,19 @@ class AnggotaController extends Controller
                 'columns' => 'required|array',
                 'columns.*' => 'string',
             ]);
-            
+
             $selectedColumns = $request->input('columns');
-            
+
             // Get anggota data using existing method
             $anggotaData = $this->getDetailedAnggotaData();
-            
+
             // Create and return the Excel file
             return Excel::download(
                 new AnggotaExport($anggotaData, $selectedColumns),
                 'data_anggota_' . date('Y-m-d_H-i-s') . '.xlsx'
             );
         } catch (\Exception $e) {
-            \Log::error("Error exporting anggota data: " . $e->getMessage());
+            Log::error("Error exporting anggota data: " . $e->getMessage());
             return response()->json([
                 'status' => 500,
                 'message' => 'Terjadi kesalahan saat mengexport data: ' . $e->getMessage()
@@ -1861,44 +1860,44 @@ class AnggotaController extends Controller
     {
         $anggotaIds = AnggotaModel::pluck('id_anggota')->toArray();
         $anggotaCollection = collect();
-        
+
         foreach ($anggotaIds as $id) {
             try {
                 // Validate that ID is a valid integer
                 if (!is_numeric($id) || (int) $id != $id) {
-                    \Log::warning("Invalid anggota ID: {$id}");
+                    Log::warning("Invalid anggota ID: {$id}");
                     continue;
                 }
-                
+
                 $anggota = AnggotaModel::find($id);
-                
+
                 if (!$anggota) {
-                    \Log::warning("Anggota not found for ID: {$id}");
+                    Log::warning("Anggota not found for ID: {$id}");
                     continue;
                 }
-                
+
                 $keluarga = AnggotaKeluargaModel::where('id_anggota', $anggota->id_anggota)->first();
                 $pendidikan = AnggotaPendidikanModel::where('id_anggota', $anggota->id_anggota)->first();
                 $pekerjaan = AnggotaPekerjaanModel::where('id_anggota', $anggota->id_anggota)->first();
                 $keterampilan = AnggotaKeterampilanModel::where('id_anggota', $anggota->id_anggota)->first();
                 $minat = AnggotaMinatModel::where('id_anggota', $anggota->id_anggota)->get();
                 $organisasi = AnggotaOrganisasiModel::where('id_anggota', $anggota->id_anggota)->first();
-                
-                $jamaah = $anggota->id_master_jamaah ? 
+
+                $jamaah = $anggota->id_master_jamaah ?
                     MasterJamaahModel::find($anggota->id_master_jamaah) : null;
-                    
-                $otonom = $anggota->id_otonom ? 
+
+                $otonom = $anggota->id_otonom ?
                     MasterOtonomModel::find($anggota->id_otonom) : null;
-                    
-                $tingkatPendidikan = ($pendidikan && $pendidikan->id_tingkat_pendidikan) ? 
+
+                $tingkatPendidikan = ($pendidikan && $pendidikan->id_tingkat_pendidikan) ?
                     TingkatPendidikanModel::find($pendidikan->id_tingkat_pendidikan) : null;
-                    
-                $masterPekerjaan = ($pekerjaan && $pekerjaan->id_master_pekerjaan) ? 
+
+                $masterPekerjaan = ($pekerjaan && $pekerjaan->id_master_pekerjaan) ?
                     MasterPekerjaanModel::find($pekerjaan->id_master_pekerjaan) : null;
-                    
-                $masterKeterampilan = ($keterampilan && $keterampilan->id_master_keterampilan) ? 
+
+                $masterKeterampilan = ($keterampilan && $keterampilan->id_master_keterampilan) ?
                     MasterKeterampilanModel::find($keterampilan->id_master_keterampilan) : null;
-                
+
                 $masterMinat = collect();
                 if ($minat->isNotEmpty()) {
                     $minatIds = $minat->pluck('id_master_minat')->filter()->values();
@@ -1906,14 +1905,14 @@ class AnggotaController extends Controller
                         $masterMinat = MasterMinatModel::whereIn('id_master_minat', $minatIds)->get();
                     }
                 }
-                
+
                 $statusMapping = [
                     1 => 'Aktif',
                     0 => 'Tidak Aktif',
                     2 => 'Meninggal Dunia',
                     3 => 'Mutasi'
                 ];
-                
+
                 $detailedAnggota = [
                     'id_anggota' => $anggota->id_anggota,
                     'personal' => [
@@ -1989,14 +1988,14 @@ class AnggotaController extends Controller
                         'namaOrganisasi' => $organisasi->nama_organisasi ?? null,
                     ]
                 ];
-                
+
                 $anggotaCollection->push($detailedAnggota);
             } catch (\Exception $e) {
-                \Log::error("Error processing anggota ID {$id}: " . $e->getMessage());
+                Log::error("Error processing anggota ID {$id}: " . $e->getMessage());
                 continue;
             }
         }
-        
+
         return $anggotaCollection->toArray();
     }
 }

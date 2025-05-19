@@ -86,6 +86,7 @@ Route::middleware('auth.token')->group(function () {
     Route::get('/data_choice_keterampilan', [AnggotaController::class, 'getChoiceDataKeterampilan']);
     Route::get('/data_choice_minat', [AnggotaController::class, 'getChoiceDataMinat']);
     Route::get('/data_choice_jamaah', [JamaahMonografiController::class, 'getChoiceDataJamaah']);
+    Route::get('/data_choice_advanced_statistic', [AnggotaController::class, 'dataChoiceAdvancedStatistic']);
 
     // --- Webhooks ---
     Route::get('webhooks', [WebhookController::class, 'verifyWebhook']);

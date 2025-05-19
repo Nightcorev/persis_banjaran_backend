@@ -36,9 +36,9 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth.toke
 // Routes yang membutuhkan auth.token middleware
 Route::middleware('auth.token')->group(function () {
     // Route untuk Anggota
-    
 
-   
+
+
 
     // Route untuk Data Jamaah dan Statistik
     // Route::get('/data_jamaah', [JamaahMonografiController::class, 'index']);
@@ -107,14 +107,13 @@ Route::middleware('auth.token')->group(function () {
         Route::put('/verify-log/{iuranLog}', [IuranController::class, 'verifyLog']);
         Route::put('/reject-log/{iuranLog}', [IuranController::class, 'rejectLog']);
         Route::get('/pending-logs/{anggotaId}', [IuranController::class, 'getPendingLogs']); // Atau permission khusus
+        Route::get('/rekap-jamaah', [IuranController::class, 'getRekapJamaah']); // Buat permission baru jika perlu
 
+        Route::get('/rekap-jamaah/export', [IuranController::class, 'exportRekapJamaah']); // Buat permission baru jika perlu
 
-        // Endpoint lama yg mungkin tidak dipakai lagi?
-        // Route::get('/payment/{id}', [IuranController::class, 'paymentDetail']);
-        // Route::post('/pay', [IuranController::class, 'store']);
-        // Route::put('/edit/{id}', [IuranController::class, 'updateNominal']);
+        Route::get('/template-pembayaran/{jamaah_id}', [IuranController::class, 'downloadTemplatePembayaran']);
+        Route::get('/pending-count', [IuranController::class, 'getPendingCount']); // Buat permission baru jika perlu
 
-        // Route::delete('/{id}', [IuranController::class, 'destroy']);
         Route::post('/reminder/batch', [IuranController::class, 'sendBatchReminder']);
         Route::get('/tunggakan', [IuranController::class, 'getTunggakan']);
     });
@@ -122,29 +121,6 @@ Route::middleware('auth.token')->group(function () {
     // --- Endpoint Tahun Aktif (BARU) ---
     Route::apiResource('tahun-aktif', TahunAktifController::class); // Permission baru: manage
 
-    // Route::prefix('iuran')->group(function () {
-    //     Route::get('/summary', [IuranController::class, 'summary'])
-    //          ->middleware('permission:iuran,view');
-    //     Route::get('/payment/{id}', [IuranController::class, 'paymentDetail'])
-    //          ->middleware('permission:iuran,view');
-    //     Route::post('/pay', [IuranController::class, 'store'])
-    //          ->middleware('permission:iuran,create');
-    //     Route::put('/edit/{id}', [IuranController::class, 'updateNominal'])
-    //          ->middleware('permission:iuran,update');
-    //     Route::put('/verify/{id}', [IuranController::class, 'verify'])
-    //          ->middleware('permission:iuran,verify');
-    //     Route::put('/reject/{id}', [IuranController::class, 'reject'])
-    //          ->middleware('permission:iuran,reject');
-    //     Route::delete('/{id}', [IuranController::class, 'destroy'])
-    //          ->middleware('permission:iuran,delete');
-    //     Route::post('/reminder/batch', [IuranController::class, 'sendBatchReminder'])
-    //          ->middleware('permission:iuran,send_reminder');
-
-    //     // --- RUTE BARU UNTUK DATA TUNGGAKAN ---
-    //     Route::get('/tunggakan', [IuranController::class, 'getTunggakan'])
-    //          ->middleware('permission:iuran,view'); // Atau permission 'send_reminder'
-    //     // --- AKHIR RUTE BARU ---
-    // });
 
     // --- Endpoint Chatbot (BARU) ---
     Route::get('/chatbot', [ResponBotController::class, 'index']); // Kecualikan aksi yg butuh permission beda
@@ -198,16 +174,16 @@ Route::get('/anggota/detailed', [AnggotaController::class, 'indexDetailed']);
 Route::post('/anggota/export-excel', [AnggotaController::class, 'exportExcel']);
 
 Route::get('/anggota', [AnggotaController::class, 'index']);
-    Route::get('/anggota/all', [AnggotaController::class, 'selectAll']);
-    Route::get('/anggota/{id}', [AnggotaController::class, 'show']);
- Route::post('/anggota', [AnggotaController::class, 'store'])
-        ->middleware('permission:data_anggota,add');
-    Route::put('/anggota/{id}', [AnggotaController::class, 'update'])
-        ->middleware('permission:data_anggota,edit');
-    Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy'])
-        ->middleware('permission:data_anggota,delete');
-    // Route::get('/anggota/by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'indexByJamaah']);
+Route::get('/anggota/all', [AnggotaController::class, 'selectAll']);
+Route::get('/anggota/{id}', [AnggotaController::class, 'show']);
+Route::post('/anggota', [AnggotaController::class, 'store'])
+    ->middleware('permission:data_anggota,add');
+Route::put('/anggota/{id}', [AnggotaController::class, 'update'])
+    ->middleware('permission:data_anggota,edit');
+Route::delete('/anggota/{id}', [AnggotaController::class, 'destroy'])
+    ->middleware('permission:data_anggota,delete');
+// Route::get('/anggota/by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'indexByJamaah']);
 
-    Route::get('/anggota/choice_by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'anggotaByJamaah']);
+Route::get('/anggota/choice_by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'anggotaByJamaah']);
 
-    Route::post('/upload-foto', [AnggotaController::class, 'uploadFoto']);
+Route::post('/upload-foto', [AnggotaController::class, 'uploadFoto']);

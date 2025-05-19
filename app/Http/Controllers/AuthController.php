@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AnggotaModel;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\UserToken;
@@ -67,6 +68,11 @@ class AuthController extends Controller
             return response()->json(['message' => 'Username atau password salah'], 401);
         }
 
+        $anggota = AnggotaModel::where('id_anggota', $user->id_anggota)->first();
+        if ($anggota) {
+            $user->id_master_jamaah = $anggota->id_master_jamaah;
+        }
+
         // 🔹 Cek Apakah User Sudah Punya Token di Perangkat Ini
         $existingToken = UserToken::where('user_id', $user->id)
             ->where('device_info', $request->device_info)
@@ -109,6 +115,8 @@ class AuthController extends Controller
                 'name_user' => $user->name,
                 'username' => $user->username,
                 'role' => $role,
+                'id_master_jamaah' => $user->id_master_jamaah,
+
             ],
             'permissions' => $permissions
         ]);

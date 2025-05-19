@@ -48,6 +48,9 @@ class BroadcastController extends Controller
         Log::debug('Data request masuk ke store():', $request->all());
         $konversiWaktu = $this->convertTimestamp($request->waktu_pengiriman);
 
+        // return response()->json([
+        //     'message' => 'Broadcast berhasil dibuat'
+        // ], 201);
         $broadcast = BroadcastModel::create([
             'headline' => $request->headline ?? null,
             'deskripsi' => $request->deskripsi ?? null,
@@ -62,7 +65,7 @@ class BroadcastController extends Controller
         Log::debug('waktu dikonversi:', ['waktu_pengiriman' => $broadcast->waktu_pengiriman]);
         Log::debug('Current datetime: ' . now()->format('Y-m-d H:i:s'));
 
-        // $this->sendInformation($broadcast);
+        $this->sendInformation($broadcast);
 
         return response()->json([
             'message' => 'Broadcast berhasil dibuat',
@@ -74,14 +77,9 @@ class BroadcastController extends Controller
     {
 
         $noTelpList = null;
-        if ($broadcast->tujuan === 'test') {
-            Log::debug('masuk ke tujuan test');
-            $noTelpList = [
-                '081281154008',
-                '08996981377',
-                // '085155072811'
-            ];
-        } else if ($broadcast->tujuan === 'PJ') {
+        if ($broadcast->tujuan === 'nomor_tertentu') {
+
+        } else if ($broadcast->tujuan === 'semua_pj') {
             Log::debug('masuk ke tujuan PJ');
 
             // Ambil ID anggota yang menjadi PJ aktif
@@ -108,11 +106,11 @@ class BroadcastController extends Controller
 
             Log::debug('Nomor anggota non PJ: ' . json_encode($noTelpList));
 
-        } else if ($broadcast->tujuan === 'semua') {
+        } else if ($broadcast->tujuan === 'semua_anggota') {
             Log::debug('masuk ke tujuan semua');
 
             // Ambil semua no telp anggota
-            $noTelpList = AnggotaModel::pluck('no_telp');
+            $noTelpList = AnggotaModel::pluck('no_telp')->where('status_aktif', '1');
 
             Log::debug('Nomor semua anggota: ' . json_encode($noTelpList));
         }

@@ -1162,7 +1162,8 @@ class AnggotaController extends Controller
             't_anggota.id_anggota',
             't_anggota.nik',
             't_anggota.nama_lengkap',
-            't_anggota.email'
+            't_anggota.email',
+            't_anggota.no_telp'
         )->orderBy('t_anggota.nama_lengkap', 'asc')
             ->where('t_anggota.status_aktif', 1);
 
@@ -1326,6 +1327,94 @@ class AnggotaController extends Controller
         ], 200);
     }
 
+    public function dataChoiceAdvancedStatistic()
+    {
+        $otonom = MasterOtonomModel::select(
+            'id_otonom',
+            'nama_otonom'
+        )->get();
+
+        $statusAktif = [
+            ['value' => '1', 'label' => 'Aktif'],
+            ['value' => '0', 'label' => 'Tidak'],
+            ['value' => '2', 'label' => 'Meninggal Dunia'],
+            ['value' => '3', 'label' => 'Mutasi'],
+        ];
+
+        $statusMerital = [
+            ['value' => 'Belum Menikah', 'label' => 'Belum Menikah'],
+            ['value' => 'Menikah', 'label' => 'Menikah'],
+            ['value' => 'Duda', 'label' => 'Duda'],
+        ];
+
+        $jumlahTanggungan = [
+            ['value' => 'Kurang dari 2 orang', 'label' => 'Kurang dari 2 orang'],
+            ['value' => '2-3 Orang', 'label' => '2-3 Orang'],
+            ['value' => '4-5 orang', 'label' => '4-5 orang'],
+            ['value' => 'Lebih dari 5 Orang', 'label' => 'Lebih dari 5 Orang'],
+        ];
+
+        $jumlahTanggungan = [
+            ['value' => 'Kurang dari 2 orang', 'label' => 'Kurang dari 2 orang'],
+            ['value' => '2-3 Orang', 'label' => '2-3 Orang'],
+            ['value' => '4-5 orang', 'label' => '4-5 orang'],
+            ['value' => 'Lebih dari 5 Orang', 'label' => 'Lebih dari 5 Orang'],
+        ];
+
+        $istriPersistri = [
+            ['value' => '1', 'label' => 'Ya'],
+            ['value' => '0', 'label' => 'Tidak'],
+        ];
+
+        $kepemilikanRumah = [
+            ['value' => 'Pribadi', 'label' => 'Pribadi'],
+            ['value' => 'Sewa', 'label' => 'Sewa'],
+        ];
+
+        $pendidikan = TingkatPendidikanModel::select(
+            'id_tingkat_pendidikan',
+            'pendidikan'
+        )->get();
+
+        $pekerjaan = MasterPekerjaanModel::select(
+            'id_master_pekerjaan',
+            'nama_pekerjaan'
+        )->get();
+
+        $pendapatan = [
+            ['value' => 'Kurang dari 1 juta rupiah', 'label' => 'Kurang dari 1 juta rupiah'],
+            ['value' => '1 juta s.d kurang dari 2 juta rupiah', 'label' => '1 juta s.d kurang dari 2 juta rupiah'],
+            ['value' => '2 Juta s.d kurang dari 3 juta rupiah', 'label' => '2 Juta s.d kurang dari 3 juta rupiah'],
+            ['value' => '3 juta s.d kurang dari 4 juta rupiah', 'label' => '3 juta s.d kurang dari 4 juta rupiah'],
+            ['value' => 'Lebih dari 4 juta rupiah', 'label' => 'Lebih dari 4 juta rupiah'],
+        ];
+
+        $keterampilan = MasterKeterampilanModel::select(
+            'id_master_keterampilan',
+            'nama_keterampilan'
+        )->get();
+
+        $minat = MasterMinatModel::select(
+            'id_master_minat',
+            'nama_minat'
+        )->get();
+
+        return response()->json([
+            'master_otonom' => $otonom,
+            'status_aktif' => $statusAktif,
+            'status_merital' => $statusMerital,
+            'tanggungan' => $jumlahTanggungan,
+            'istri_persistri' => $istriPersistri,
+            'kepemilikan_rumah' => $kepemilikanRumah,
+            'pendidikan' => $pendidikan,
+            'pekerjaan' => $pekerjaan,
+            'pendapatan' => $pendapatan,
+            'keterampilan' => $keterampilan,
+            'minat' => $minat,
+        ]);
+    }
+
+
     /**
      * @OA\Post(
      *     path="/api/statistik/advanced",
@@ -1346,47 +1435,155 @@ class AnggotaController extends Controller
 
     public function advancedStatistic(Request $request)
     {
-        $query = AnggotaModel::query();
+        \Log::info('GET Request Data:' . $request->status_aktif);
 
+        // Main query for statistics
+        $query = AnggotaModel::from('t_anggota');
+        $this->applyFilters($query, $request);
+
+        $result = $query->join('t_master_jamaah as mj', 't_anggota.id_master_jamaah', '=', 'mj.id_master_jamaah')
+            ->selectRaw('mj.nama_jamaah, COUNT(t_anggota.id_anggota) as jumlah_anggota, mj.lokasi_lat, mj.lokasi_long')
+            ->groupBy('mj.nama_jamaah', 'mj.lokasi_lat', 'mj.lokasi_long')
+            ->get();
+
+        // Additional query for anggota details
+        $detailQuery = AnggotaModel::from('t_anggota')
+            ->join('t_master_jamaah as mj', 't_anggota.id_master_jamaah', '=', 'mj.id_master_jamaah');
+        $this->applyFilters($detailQuery, $request);
+
+        $detailAnggota = $detailQuery->select(
+            't_anggota.id_anggota',
+            't_anggota.nama_lengkap',
+            't_anggota.id_master_jamaah',
+            'mj.nama_jamaah'
+        )->orderBy('t_anggota.id_master_jamaah')->get();
+
+
+        $totalAnggota = $result->sum('jumlah_anggota');
+        if ($totalAnggota === 0) {
+            return response()->json([
+                'message' => 'Data tidak tersedia karena semua jamaah memiliki jumlah anggota 0.'
+            ], 404);
+        }
+
+        return response()->json([
+            'message' => 'Data berhasil divisualisasikan.',
+            'statistics' => $result,
+            'detail_anggota' => $detailAnggota
+        ], 200);
+    }
+
+    protected function applyFilters($query, $request)
+    {
+        // ======== ANGGOTA FILTERS ========
+        if ($request->filled('master_otonom')) {
+            $query->where('t_anggota.id_otonom', (int) $request->master_otonom);
+        }
+
+        if ($request->filled('status_aktif')) {
+            $query->where('t_anggota.status_aktif', (int) $request->status_aktif);
+        }
+
+        if ($request->filled('status_merital')) {
+            $query->where('t_anggota.status_merital', $request->status_merital);
+        }
+
+        if ($request->filled('tempat_lahir')) {
+            $query->whereRaw('LOWER(t_anggota.tempat_lahir) = ?', [strtolower($request->tempat_lahir)]);
+        }
+
+        if ($request->filled('kelahiran_tahun')) {
+            $query->whereRaw('EXTRACT(YEAR FROM t_anggota.tanggal_lahir) = ?', [$request->kelahiran_tahun]);
+        }
+
+        if ($request->filled('tahun_haji')) {
+            $query->where('t_anggota.tahun_haji', $request->tahun_haji);
+        }
+
+        // ======== KELUARGA FILTERS ========
+        if ($request->filled('tanggungan')) {
+            $query->whereHas('anggota_keluarga', function ($q) use ($request) {
+                $q->where('jumlah_tanggungan', $request->tanggungan);
+            });
+        }
+
+        if ($request->filled('istri_persistri')) {
+            $query->whereHas('anggota_keluarga', function ($q) use ($request) {
+                $q->where('anggota_persistri', $request->istri_persistri);
+            });
+        }
+
+        if ($request->filled('jumlah_anak')) {
+            $query->whereHas('anggota_keluarga', function ($q) use ($request) {
+                $q->where('jumlah_seluruh_anak', $request->jumlah_anak);
+            });
+        }
+
+        if ($request->filled('jumlah_anak_pemuda')) {
+            $query->whereHas('anggota_keluarga', function ($q) use ($request) {
+                $q->where('jumlah_anak_pemuda', $request->jumlah_anak_pemuda);
+            });
+        }
+
+        if ($request->filled('jumlah_anak_pemudi')) {
+            $query->whereHas('anggota_keluarga', function ($q) use ($request) {
+                $q->where('jumlah_anak_pemudi', $request->jumlah_anak_pemudi);
+            });
+        }
+
+        if ($request->filled('kepemilikan_rumah')) {
+            $query->whereHas('anggota_keluarga', function ($q) use ($request) {
+                $q->where('status_kepemilikan_rumah', $request->kepemilikan_rumah);
+            });
+        }
+
+        // ======== PENDIDIKAN FILTERS ========
         if ($request->filled('pendidikan')) {
             $query->whereHas('anggota_pendidikan', function ($q) use ($request) {
                 $q->where('id_tingkat_pendidikan', $request->pendidikan);
             });
         }
 
+        if ($request->filled('nama_sekolah')) {
+            $query->whereHas('anggota_pendidikan', function ($q) use ($request) {
+                $q->whereRaw('LOWER(instansi) = ?', [strtolower($request->nama_sekolah)]);
+            });
+        }
+
+        if ($request->filled('jurusan')) {
+            $query->whereHas('anggota_pendidikan', function ($q) use ($request) {
+                $q->whereRaw('LOWER(jurusan) = ?', [strtolower($request->jurusan)]);
+            });
+        }
+
+        if ($request->filled('tahun_masuk')) {
+            $query->whereHas('anggota_pendidikan', function ($q) use ($request) {
+                $q->where('tahun_masuk', $request->tahun_masuk);
+            });
+        }
+
+        if ($request->filled('tahun_lulus')) {
+            $query->whereHas('anggota_pendidikan', function ($q) use ($request) {
+                $q->where('tahun_keluar', $request->tahun_lulus);
+            });
+        }
+
+        // ======== PEKERJAAN FILTERS ========
         if ($request->filled('pekerjaan')) {
             $query->whereHas('anggota_pekerjaan', function ($q) use ($request) {
                 $q->where('id_master_pekerjaan', $request->pekerjaan);
             });
         }
 
-        if ($request->filled('keterampilan')) {
-            $query->whereHas('anggota_keterampilan', function ($q) use ($request) {
-                $q->where('id_master_keterampilan', $request->keterampilan);
+        if ($request->filled('pekerjaan_lainnya')) {
+            $query->whereHas('anggota_pekerjaan', function ($q) use ($request) {
+                $q->where('lainnya', $request->pekerjaan_lainnya);
             });
         }
 
-        if ($request->filled('minat')) {
-            $query->whereHas('anggota_minat', function ($q) use ($request) {
-                $q->where('id_master_minat', $request->minat);
-            });
-        }
-
-        if ($request->filled('master_otonom')) {
-            $query->where('id_otonom', $request->otonom);
-        }
-
-        if ($request->filled('status_aktif')) {
-            $query->where('status_aktif', $request->status_aktif);
-        }
-
-        if ($request->filled('status_merital')) {
-            $query->where('status_merital', $request->status_merital);
-        }
-
-        if ($request->filled('tanggungan')) {
-            $query->whereHas('anggota_keluarga', function ($q) use ($request) {
-                $q->where('jumlah_tanggungan', $request->tanggungan);
+        if ($request->filled('nama_perusahaan')) {
+            $query->whereHas('anggota_pekerjaan', function ($q) use ($request) {
+                $q->whereRaw('LOWER(nama_instasi) = ?', [strtolower($request->nama_perusahaan)]);
             });
         }
 
@@ -1396,13 +1593,31 @@ class AnggotaController extends Controller
             });
         }
 
-        $result = $query->join('t_master_jamaah as mj', 't_anggota.id_master_jamaah', '=', 'mj.id_master_jamaah')
-            ->selectRaw('mj.nama_jamaah, COUNT(t_anggota.id_anggota) as jumlah_anggota')
-            ->groupBy('mj.nama_jamaah')
-            ->orderByDesc('jumlah_anggota')
-            ->get();
+        // ======== KETERAMPILAN FILTERS ========
+        if ($request->filled('keterampilan')) {
+            $query->whereHas('anggota_keterampilan', function ($q) use ($request) {
+                $q->where('id_master_keterampilan', $request->keterampilan);
+            });
+        }
 
-        return response()->json($result, 200);
+        if ($request->filled('keterampilan_lainnya')) {
+            $query->whereHas('anggota_keterampilan', function ($q) use ($request) {
+                $q->whereRaw('LOWER(lainnya) = ?', [strtolower($request->keterampilan_lainnya)]);
+            });
+        }
+
+        // ======== MINAT FILTERS ========
+        if ($request->filled('minat')) {
+            $query->whereHas('anggota_minat', function ($q) use ($request) {
+                $q->where('id_master_minat', $request->minat);
+            });
+        }
+
+        if ($request->filled('minat_lainnya')) {
+            $query->whereHas('anggota_minat', function ($q) use ($request) {
+                $q->whereRaw('LOWER(lainnya) = ?', [strtolower($request->minat_lainnya)]);
+            });
+        }
     }
 
 

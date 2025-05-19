@@ -18,7 +18,7 @@ class ResponBotController extends Controller
         // Ambil data dengan pagination, urutkan berdasarkan ID (atau created_at jika ada)
         // Penting: Pilih juga primary key 'id_respon_bot' dan alias sebagai 'id' untuk frontend
         $items = ResponBot::select('id_respon_bot as id', 'pesan', 'jawaban') // Pilih kolom yg perlu + alias PK
-            ->orderBy('id_respon_bot', 'desc') // Urutkan berdasarkan PK
+            ->orderBy('id_respon_bot', 'asc') // Urutkan berdasarkan PK
             ->paginate($request->input('per_page', 15));
 
         return response()->json($items);

@@ -36,7 +36,6 @@ Route::get('/dataUsers', [UserController::class, 'getDataUsers']);
 
 // Protected routes
 Route::middleware('auth.token')->group(function () {
-
     // --- Anggota ---
     Route::get('/anggota', [AnggotaController::class, 'index']);
     Route::get('/get_anggota/{id}', [AnggotaController::class, 'show']);
@@ -54,6 +53,7 @@ Route::middleware('auth.token')->group(function () {
     Route::get('/anggota/by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'indexByJamaah']);
     Route::get('/anggota/choice_by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'anggotaByJamaah']);
     Route::post('/upload-foto', [AnggotaController::class, 'uploadFoto']);
+    Route::get('/advanced_statistic', [AnggotaController::class, 'advancedStatistic']);
 
     // --- Statistik & Data Pilihan ---
     Route::get('/advanced_statistic', [AnggotaController::class, 'advancedStatistic']);

@@ -62,7 +62,7 @@ class BroadcastController extends Controller
         Log::debug('waktu dikonversi:', ['waktu_pengiriman' => $broadcast->waktu_pengiriman]);
         Log::debug('Current datetime: ' . now()->format('Y-m-d H:i:s'));
 
-        $this->sendInformation($broadcast);
+        // $this->sendInformation($broadcast);
 
         return response()->json([
             'message' => 'Broadcast berhasil dibuat',

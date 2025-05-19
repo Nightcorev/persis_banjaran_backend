@@ -51,6 +51,7 @@ Route::middleware('auth.token')->group(function () {
     Route::get('/anggota/choice_by-jamaah/{id_master_jamaah?}', [AnggotaController::class, 'anggotaByJamaah']);
 
     Route::post('/upload-foto', [AnggotaController::class, 'uploadFoto']);
+    Route::get('/advanced_statistic', [AnggotaController::class, 'advancedStatistic']);
 
     // Route untuk Data Jamaah dan Statistik
     // Route::get('/data_jamaah', [JamaahMonografiController::class, 'index']);
@@ -182,7 +183,8 @@ Route::post('/add_anggota', [AnggotaController::class, 'store']);
 Route::put('/edit_anggota/{id}', [AnggotaController::class, 'update']);
 Route::delete('/delete_anggota/{id}', [AnggotaController::class, 'destroy']);
 
-Route::get('/advanced_statistic', [AnggotaController::class, 'advancedStatistic']);
+// Route::get('/advanced_statistic', [AnggotaController::class, 'advancedStatistic']);
+Route::get('/data_choice_advanced_statistic', [AnggotaController::class, 'dataChoiceAdvancedStatistic']);
 
 Route::get('/data_musyawarah', [MusyawarahController::class, 'index']);
 Route::get('/detail_musyawarah/{id}', [MusyawarahController::class, 'view']);

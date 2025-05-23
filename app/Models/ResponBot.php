@@ -33,12 +33,11 @@ class ResponBot extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'parent',
-        'urutan',
+        'keyword',
+        'function',
         'pesan',
         'jawaban',
-        'function',
-        'aturan',
+        'tipe_respon',
     ];
 
     /**

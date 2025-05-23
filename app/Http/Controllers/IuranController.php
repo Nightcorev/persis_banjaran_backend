@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Http;
 
 class IuranController extends Controller
 {
@@ -68,12 +69,14 @@ class IuranController extends Controller
         $query = AnggotaModel::query()
             ->select(['t_anggota.id_anggota', 't_anggota.nama_lengkap', 't_anggota.id_master_jamaah', 't_master_jamaah.nama_jamaah'])
             ->join('t_master_jamaah', 't_anggota.id_master_jamaah', '=', 't_master_jamaah.id_master_jamaah')
-            ->with(['iuranLogs' => function ($q) use ($tahunAktif) {
-                $q->where('tahun', (int)$tahunAktif)
-                    ->orderByRaw("CASE status WHEN 'Verified' THEN 1 WHEN 'Pending' THEN 2 WHEN 'Failed' THEN 3 ELSE 4 END")
-                    ->orderBy('id', 'desc')
-                    ->select('id', 'anggota_id', 'status', 'paid_months', 'catatan_verifikasi');
-            }])
+            ->with([
+                'iuranLogs' => function ($q) use ($tahunAktif) {
+                    $q->where('tahun', (int) $tahunAktif)
+                        ->orderByRaw("CASE status WHEN 'Verified' THEN 1 WHEN 'Pending' THEN 2 WHEN 'Failed' THEN 3 ELSE 4 END")
+                        ->orderBy('id', 'desc')
+                        ->select('id', 'anggota_id', 'status', 'paid_months', 'catatan_verifikasi');
+                }
+            ])
             ->where('t_anggota.status_aktif', 1)
             ->orderby('t_anggota.nama_lengkap');
 
@@ -86,7 +89,7 @@ class IuranController extends Controller
 
         if ($statusFilter && in_array($statusFilter, ['Pending', 'Verified', 'Failed'])) {
             $query->whereHas('iuranLogs', function ($q_log) use ($tahunAktif, $statusFilter) {
-                $q_log->where('tahun', (int)$tahunAktif)
+                $q_log->where('tahun', (int) $tahunAktif)
                     ->where('status', $statusFilter);
             });
         }
@@ -104,7 +107,7 @@ class IuranController extends Controller
                         Log::warning('paid_months JSON tidak valid log ID: ' . $log->id);
                         $decodedMonths = [];
                     }
-                    $paidMonthsInLog = collect($decodedMonths)->map(fn($m) => (int)$m)->filter(fn($m) => $m > 0);
+                    $paidMonthsInLog = collect($decodedMonths)->map(fn($m) => (int) $m)->filter(fn($m) => $m > 0);
 
                     if ($paidMonthsInLog->isEmpty()) {
                         continue;
@@ -249,14 +252,34 @@ class IuranController extends Controller
 
             if ($anggota) {
                 try {
-                    Log::info("Reminder Sent (Simulated):", [
+                    Log::info("Reminder Sent:", [
                         'anggota_id' => $anggota->id_anggota,
                         'nama' => $anggota->nama_lengkap,
                         'no_telp' => $anggota->no_telp ?? 'N/A',
                         'sender_user_id' => Auth::id(),
                         'timestamp' => now()
                     ]);
-                    $sentCount++;
+                    $requestData = [
+                        'anggota_id' => $anggota->id_anggota,
+                        'no_telp' => $anggota->no_telp,
+                        'nama_lengkap' => $anggota->nama_lengkap
+                    ];
+
+                    // Send request to Node.js service
+                    $response = Http::post('http://localhost:3000/send_reminder_batch', $requestData);
+
+                    if ($response->successful()) {
+                        Log::info("Reminder Sent Successfully:", [
+                            'anggota_id' => $anggota->id_anggota,
+                            'nama' => $anggota->nama_lengkap,
+                            'no_telp' => $anggota->no_telp ?? 'N/A',
+                            'sender_user_id' => Auth::id(),
+                            'timestamp' => now()
+                        ]);
+                        $sentCount++;
+                    } else {
+                        throw new \Exception($response->body());
+                    }
                 } catch (\Exception $e) {
                     Log::error("Failed sending reminder to Anggota ID: {$id}", ['error' => $e->getMessage()]);
                     $failedIds[] = $id;
@@ -337,12 +360,12 @@ class IuranController extends Controller
                 }
             }
 
-            return (object)[
+            return (object) [
                 'anggota_id' => $item->id_anggota,
                 'nama_lengkap' => $item->nama_lengkap,
                 'nama_jamaah' => $item->nama_jamaah,
                 'no_telp' => $item->no_telp,
-                'bulan_lunas_terakhir' => (int)$bulanLunasTerakhir,
+                'bulan_lunas_terakhir' => (int) $bulanLunasTerakhir,
                 'jumlah_bulan_tunggakan' => $jumlahBulanTunggakan,
                 'nominal_tunggakan' => $nominalTunggakan,
                 'detail_bulan_tunggakan' => $detailBulan,
@@ -516,17 +539,23 @@ class IuranController extends Controller
         $monthlyFee = config('iuran.monthly_fee', 10000);
         $totalMonthsInYear = 12;
 
-        $jamaahs = MasterJamaahModel::withCount(['anggota as jumlah_anggota' => function ($query) {
-            $query->where('status_aktif', 1);
-        }])
-            ->with(['anggota' => function ($query) use ($tahun) {
-                $query
-                    ->with(['iuranLogs' => function ($logQuery) use ($tahun) {
-                        $logQuery->where('tahun', $tahun)
-                            ->where('status', 'Verified')
-                            ->select('anggota_id', 'paid_months');
-                    }]);
-            }])
+        $jamaahs = MasterJamaahModel::withCount([
+            'anggota as jumlah_anggota' => function ($query) {
+                $query->where('status_aktif', 1);
+            }
+        ])
+            ->with([
+                'anggota' => function ($query) use ($tahun) {
+                    $query
+                        ->with([
+                            'iuranLogs' => function ($logQuery) use ($tahun) {
+                                $logQuery->where('tahun', $tahun)
+                                    ->where('status', 'Verified')
+                                    ->select('anggota_id', 'paid_months');
+                            }
+                        ]);
+                }
+            ])
             ->orderBy('nama_jamaah')
             ->get();
 
@@ -539,7 +568,7 @@ class IuranController extends Controller
                 foreach ($anggota->iuranLogs as $log) {
                     $decodedMonths = json_decode($log->paid_months, true);
                     if (is_array($decodedMonths)) {
-                        $paidMonthsInLog = collect($decodedMonths)->map(fn($m) => (int)$m)->filter(fn($m) => $m > 0);
+                        $paidMonthsInLog = collect($decodedMonths)->map(fn($m) => (int) $m)->filter(fn($m) => $m > 0);
                         $uniqueVerifiedMonthsForAnggota = $uniqueVerifiedMonthsForAnggota->merge($paidMonthsInLog);
                     } else {
                         Log::warning("paid_months bukan JSON array valid untuk log ID: {$log->id} pada anggota ID: {$anggota->id_anggota}");
@@ -573,17 +602,23 @@ class IuranController extends Controller
         $monthlyFee = config('iuran.monthly_fee', 10000);
         $totalMonthsInYear = 12;
 
-        $jamaahs = MasterJamaahModel::withCount(['anggota as jumlah_anggota' => function ($query) {
-            $query->where('t_anggota.status_aktif', 1);
-        }])
-            ->with(['anggota' => function ($query) use ($tahun) {
-                $query
-                    ->with(['iuranLogs' => function ($logQuery) use ($tahun) {
-                        $logQuery->where('tahun', $tahun)
-                            ->where('status', 'Verified')
-                            ->select('anggota_id', 'paid_months');
-                    }]);
-            }])
+        $jamaahs = MasterJamaahModel::withCount([
+            'anggota as jumlah_anggota' => function ($query) {
+                $query->where('t_anggota.status_aktif', 1);
+            }
+        ])
+            ->with([
+                'anggota' => function ($query) use ($tahun) {
+                    $query
+                        ->with([
+                            'iuranLogs' => function ($logQuery) use ($tahun) {
+                                $logQuery->where('tahun', $tahun)
+                                    ->where('status', 'Verified')
+                                    ->select('anggota_id', 'paid_months');
+                            }
+                        ]);
+                }
+            ])
             ->orderBy('nama_jamaah')
             ->get();
 
@@ -596,7 +631,7 @@ class IuranController extends Controller
                 foreach ($anggota->iuranLogs as $log) {
                     $decodedMonths = json_decode($log->paid_months, true);
                     if (is_array($decodedMonths)) {
-                        $paidMonthsInLog = collect($decodedMonths)->map(fn($m) => (int)$m)->filter(fn($m) => $m > 0);
+                        $paidMonthsInLog = collect($decodedMonths)->map(fn($m) => (int) $m)->filter(fn($m) => $m > 0);
                         $uniqueVerifiedMonthsForAnggota = $uniqueVerifiedMonthsForAnggota->merge($paidMonthsInLog);
                     }
                 }
@@ -641,11 +676,13 @@ class IuranController extends Controller
         }
 
         $anggotaDenganIuran = AnggotaModel::where('id_master_jamaah', $jamaah_id)
-            ->with(['iuranLogs' => function ($query) use ($tahun) {
-                $query->where('tahun', $tahun)
-                    ->whereIn('status', ['Verified', 'Pending'])
-                    ->select('anggota_id', 'paid_months');
-            }])
+            ->with([
+                'iuranLogs' => function ($query) use ($tahun) {
+                    $query->where('tahun', $tahun)
+                        ->whereIn('status', ['Verified', 'Pending'])
+                        ->select('anggota_id', 'paid_months');
+                }
+            ])
             ->select('id_anggota', 'nama_lengkap', 'nomor_ktp')
             ->where('status_aktif', 1)
             ->orderBy('nama_lengkap')
@@ -664,7 +701,7 @@ class IuranController extends Controller
                 foreach ($anggota->iuranLogs as $log) {
                     $decodedMonths = json_decode($log->paid_months, true);
                     if (is_array($decodedMonths)) {
-                        $paidMonthsInLog = collect($decodedMonths)->map(fn($m) => (int)$m)->filter(fn($m) => $m > 0);
+                        $paidMonthsInLog = collect($decodedMonths)->map(fn($m) => (int) $m)->filter(fn($m) => $m > 0);
                         $paidMonthsSet = $paidMonthsSet->merge($paidMonthsInLog);
                     }
                 }
@@ -693,5 +730,34 @@ class IuranController extends Controller
         })->count();
 
         return response()->json(['pending_count' => $pendingAnggotaCount]);
+    }
+
+    public function sendReminder(Request $request)
+    {
+        Log::info('Data request:', $request->all());
+
+        try {
+            $response = Http::post('http://localhost:3000/send_reminder', $request->all());
+
+            if ($response->successful()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Reminder sent successfully',
+                    'data' => $response->json()
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to send reminder',
+                    'error' => $response->body()
+                ], $response->status());
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error sending reminder',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }

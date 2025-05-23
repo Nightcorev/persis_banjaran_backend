@@ -82,7 +82,7 @@
                                                                 "type": "integer",
                                                                 "example": 1
                                                             },
-                                                            "nik": {
+                                                            "niat": {
                                                                 "type": "string",
                                                                 "example": "3201234567890001"
                                                             },

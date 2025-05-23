@@ -14,15 +14,13 @@ class AnggotaModel extends Model
     protected $primaryKey = 'id_anggota';
     public $timestamps = false;
     protected $fillable = [
-        'nik',
+        'niat',
         'nama_lengkap',
         'tempat_lahir',
         'tanggal_lahir',
         'status_merital',
-        'golongan_darah',
-        'email',
         'no_telp',
-        'alamat',
+        'alamat_ktp',
         'masa_aktif_anggota',
         'foto',
         'status_aktif',

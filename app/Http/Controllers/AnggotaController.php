@@ -71,9 +71,8 @@ class AnggotaController extends Controller
      *                     @OA\Items(
      *                         type="object",
      *                         @OA\Property(property="id_anggota", type="integer", example=1),
-     *                         @OA\Property(property="nik", type="string", example="3201234567890001"),
+     *                         @OA\Property(property="niat", type="string", example="3201234567890001"),
      *                         @OA\Property(property="nama_lengkap", type="string", example="Ahmad Fauzi"),
-     *                         @OA\Property(property="email", type="string", example="ahmad@example.com"),
      *                         @OA\Property(property="tanggal_lahir", type="string", format="date", example="1990-01-01"),
      *                         @OA\Property(property="nama_jamaah", type="string", example="Persis Banjaran"),
      *                         @OA\Property(property="no_telp", type="string", example="082112345678"),
@@ -99,9 +98,8 @@ class AnggotaController extends Controller
         $query = AnggotaModel::select(
             't_anggota.id_anggota',
             't_anggota.foto',
-            't_anggota.nik',
+            't_anggota.niat',
             't_anggota.nama_lengkap',
-            't_anggota.email',
             't_anggota.tanggal_lahir',
             't_master_jamaah.nama_jamaah',
             't_anggota.no_telp',
@@ -124,7 +122,7 @@ class AnggotaController extends Controller
             ->orderBy('t_anggota.id_anggota', 'desc');
 
         if (!empty($searchTerm)) {
-            $query->where('t_anggota.nama_lengkap', 'like', "%{$searchTerm}%");
+            $query->whereRaw('LOWER(t_anggota.nama_lengkap) LIKE ?', ['%' . strtolower($searchTerm) . '%']);
         }
 
         $total = $query->count();
@@ -259,14 +257,14 @@ class AnggotaController extends Controller
             1 => 'Aktif',
             0 => 'Tidak Aktif',
             2 => 'Meninggal Dunia',
-            3 => 'Mutasi'
+            3 => 'Heregistrasi'
         ];
         return response()->json([
             'personal' => [
                 'fotoURL' => $anggota->foto
                     ? "http://localhost:8000/storage/uploads/{$anggota->foto}"
                     : "http://localhost:8000/storage/uploads/persis_default.jpeg",
-                'nomorAnggota' => $anggota->nik ?? null,
+                'nomorAnggota' => $anggota->niat ?? null,
                 'nomorKTP' => $anggota->nomor_ktp ?? null,
                 'namaLengkap' => $anggota->nama_lengkap ?? null,
                 'tempatLahir' => $anggota->tempat_lahir ?? null,
@@ -274,7 +272,7 @@ class AnggotaController extends Controller
                 'statusMerital' => $anggota->status_merital ?? null,
                 'nomorTelepon' => $anggota->no_telp ?? null,
                 'nomorWA' => $anggota->no_wa ?? null,
-                'alamat' => $anggota->alamat ?? null,
+                'alamat' => $anggota->alamat_ktp ?? null,
                 'alamatTinggal' => $anggota->alamat_tinggal ?? null,
                 'otonom' => $anggota->id_otonom ?? null,
                 'namaOtonom' => $otonom->nama_otonom ?? null,
@@ -453,17 +451,15 @@ class AnggotaController extends Controller
 
         $anggota = AnggotaModel::create([
             'foto' => $encryptedName ?? null,
-            'nik' => $dataPersonal['nomorAnggota'] ?? null,
+            'niat' => $dataPersonal['nomorAnggota'] ?? null,
             'nomor_ktp' => $dataPersonal['nomorKTP'] ?? null,
             'nama_lengkap' => $dataPersonal['namaLengkap'] ?? null,
             'tempat_lahir' => $dataPersonal['tempatLahir'] ?? null,
             'tanggal_lahir' => $dataPersonal['tanggalLahir'] ?? null,
             'status_merital' => $dataPersonal['statusMerital'] ?? null,
-            // 'golongan_darah' => $dataPersonal['golonganDarah'] ?? null,
-            // 'email' => $dataPersonal['email'] ?? null,
             'no_telp' => $dataPersonal['nomorTelepon'] ?? null,
             'no_wa' => $dataPersonal['nomorWA'] ?? null,
-            'alamat' => $dataPersonal['alamat'] ?? null,
+            'alamat_ktp' => $dataPersonal['alamat'] ?? null,
             'alamat_tinggal' => $dataPersonal['alamatTinggal'] ?? null,
             'id_otonom' => $dataPersonal['otonom'] ?? null,
             'id_master_jamaah' => $dataPersonal['jamaah'] ?? null,
@@ -515,6 +511,8 @@ class AnggotaController extends Controller
             'lainnya' => $keterampilan['keterampilanLainnya'] ?? null,
             'deskripsi' => $keterampilan['deskripsiKeterampilan'] ?? null,
         ]);
+
+        // AnggotaMinatModel::where('id_anggota', $anggota->id_anggota ?? null)->delete();
 
         foreach ($request->input('interest', []) as $minat) {
             $masterMinat = MasterMinatModel::where('nama_minat', $minat["minat"])->first();
@@ -677,7 +675,7 @@ class AnggotaController extends Controller
         $dataPersonal = $request->input('personal');
         $anggota->update([
             'foto' => $encryptedName ?? $anggota->foto,
-            'nik' => $dataPersonal['nomorAnggota'] ?? $anggota->nik,
+            'niat' => $dataPersonal['nomorAnggota'] ?? $anggota->niat,
             'nomor_ktp' => $dataPersonal['nomorKTP'] ?? $anggota->nomor_ktp,
             'nama_lengkap' => $dataPersonal['namaLengkap'] ?? $anggota->nama_lengkap,
             'tempat_lahir' => $dataPersonal['tempatLahir'] ?? $anggota->tempat_lahir,
@@ -685,7 +683,7 @@ class AnggotaController extends Controller
             'status_merital' => $dataPersonal['statusMerital'] ?? $anggota->status_merital,
             'no_telp' => $dataPersonal['nomorTelepon'] ?? $anggota->no_telp,
             'no_wa' => $dataPersonal['nomorWA'] ?? $anggota->no_wa,
-            'alamat' => $dataPersonal['alamat'] ?? $anggota->alamat,
+            'alamat_ktp' => $dataPersonal['alamat'] ?? $anggota->alamat_ktp,
             'alamat_tinggal' => $dataPersonal['alamatTinggal'] ?? $anggota->alamat_tinggal,
             'id_otonom' => $dataPersonal['otonom'] ?? $anggota->id_otonom,
             'id_master_jamaah' => $dataPersonal['jamaah'] ?? $anggota->id_master_jamaah,
@@ -1160,9 +1158,8 @@ class AnggotaController extends Controller
         // Query untuk memuat data dengan kolom tertentu
         $query = AnggotaModel::select(
             't_anggota.id_anggota',
-            't_anggota.nik',
+            't_anggota.niat',
             't_anggota.nama_lengkap',
-            't_anggota.email',
             't_anggota.no_telp'
         )->orderBy('t_anggota.nama_lengkap', 'asc')
             ->where('t_anggota.status_aktif', 1);
@@ -1708,7 +1705,7 @@ class AnggotaController extends Controller
                     $detailedAnggota = [
                         'id_anggota' => $anggota->id_anggota,
                         'personal' => [
-                            'nomorAnggota' => $anggota->nik ?? null,
+                            'nomorAnggota' => $anggota->niat ?? null,
                             'nomorKTP' => $anggota->nomor_ktp ?? null,
                             'namaLengkap' => $anggota->nama_lengkap ?? null,
                             'tempatLahir' => $anggota->tempat_lahir ?? null,
@@ -1716,7 +1713,7 @@ class AnggotaController extends Controller
                             'statusMerital' => $anggota->status_merital ?? null,
                             'nomorTelepon' => $anggota->no_telp ?? null,
                             'nomorWA' => $anggota->no_wa ?? null,
-                            'alamat' => $anggota->alamat ?? null,
+                            'alamat' => $anggota->alamat_ktp ?? null,
                             'alamatTinggal' => $anggota->alamat_tinggal ?? null,
                             'otonom' => $anggota->id_otonom ?? null,
                             'namaOtonom' => $otonom->nama_otonom ?? null,
@@ -1916,7 +1913,7 @@ class AnggotaController extends Controller
                 $detailedAnggota = [
                     'id_anggota' => $anggota->id_anggota,
                     'personal' => [
-                        'nomorAnggota' => $anggota->nik ?? null,
+                        'nomorAnggota' => $anggota->niat ?? null,
                         'nomorKTP' => $anggota->nomor_ktp ?? null,
                         'namaLengkap' => $anggota->nama_lengkap ?? null,
                         'tempatLahir' => $anggota->tempat_lahir ?? null,
@@ -1924,7 +1921,7 @@ class AnggotaController extends Controller
                         'statusMerital' => $anggota->status_merital ?? null,
                         'nomorTelepon' => $anggota->no_telp ?? null,
                         'nomorWA' => $anggota->no_wa ?? null,
-                        'alamat' => $anggota->alamat ?? null,
+                        'alamat' => $anggota->alamat_ktp ?? null,
                         'alamatTinggal' => $anggota->alamat_tinggal ?? null,
                         'otonom' => $anggota->id_otonom ?? null,
                         'namaOtonom' => $otonom->nama_otonom ?? null,
@@ -1997,5 +1994,41 @@ class AnggotaController extends Controller
         }
 
         return $anggotaCollection->toArray();
+    }
+
+    public function checkUniqueFields(Request $request)
+    {
+        $request->validate([
+            'field' => 'required|in:nomorAnggota,nomorKTP',
+            'value' => 'required',
+            'currentId' => 'nullable|integer'
+        ]);
+
+        $field = $request->input('field');
+        $value = $request->input('value');
+        $currentId = $request->input('currentId');
+
+        $query = AnggotaModel::query();
+
+        // Mapping field input ke kolom database
+        $dbField = ($field === 'nomorAnggota') ? 'niat' : 'nomor_ktp';
+
+        $query->where($dbField, $value);
+
+        // Exclude current record jika sedang edit
+        if ($currentId) {
+            $query->where('id_anggota', '!=', $currentId);
+        }
+
+        $exists = $query->exists();
+
+        return response()->json([
+            'isUnique' => !$exists,
+            'message' => $exists
+                ? ($field === 'nomorAnggota'
+                    ? 'Nomor anggota sudah digunakan'
+                    : 'Nomor KTP sudah digunakan')
+                : 'Data tersedia'
+        ]);
     }
 }

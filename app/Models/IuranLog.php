@@ -37,7 +37,7 @@ class IuranLog extends Model
         'pp' => 'decimal:2',
         'tanggal' => 'date',
         'tanggal' => 'datetime:Y-m-d H:i:s',
-        'paid_months' => 'array', // <-- Tambahkan cast ke array/json
+        'paid_months' => 'array',
     ];
 
     // Relasi (sama seperti sebelumnya)

@@ -16,9 +16,9 @@ class AnggotaPendidikanModel extends Model
         'id_tingkat_pendidikan',
         'instansi',
         'jurusan',
-        'tahun_masuk',
-        'tahun_keluar',
-        'jenis_pendidikan'
+        // 'tahun_masuk',
+        // 'tahun_keluar',
+        // 'jenis_pendidikan'
     ];
 
     public function anggota()

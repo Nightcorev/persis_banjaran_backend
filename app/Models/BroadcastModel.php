@@ -13,10 +13,8 @@ class BroadcastModel extends Model
     protected $primaryKey = 'id_broadcast';
     public $timestamps = false;
     protected $fillable = [
-        'headline',
-        'deskripsi',
-        'tipe_broadcast',
-        'nama_file',
+        'pesan',
+        'lampiran',
         'status_pengiriman',
         'waktu_pengiriman',
         'tujuan',

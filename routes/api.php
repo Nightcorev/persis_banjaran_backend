@@ -88,6 +88,8 @@ Route::middleware('auth.token')->group(function () {
     Route::get('/data_choice_jamaah', [JamaahMonografiController::class, 'getChoiceDataJamaah']);
     Route::get('/data_choice_advanced_statistic', [AnggotaController::class, 'dataChoiceAdvancedStatistic']);
 
+    Route::post('/check_unique_fields', [AnggotaController::class, 'checkUniqueFields']);
+
     // --- Webhooks ---
     Route::get('webhooks', [WebhookController::class, 'verifyWebhook']);
     Route::post('webhooks', [WebhookController::class, 'handleWebhook']);
@@ -133,6 +135,7 @@ Route::middleware('auth.token')->group(function () {
         Route::get('/rekap-jamaah/export', [IuranController::class, 'exportRekapJamaah']);
         Route::get('/template-pembayaran/{jamaah_id}', [IuranController::class, 'downloadTemplatePembayaran']);
         Route::get('/pending-count', [IuranController::class, 'getPendingCount']);
+        Route::post('/send_reminder', [IuranController::class, 'sendReminder']);
         Route::post('/reminder/batch', [IuranController::class, 'sendBatchReminder']);
         Route::get('/tunggakan', [IuranController::class, 'getTunggakan']);
     });

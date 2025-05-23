@@ -75,14 +75,14 @@ class UserController extends Controller
         // Query dengan relasi role dan anggota (hanya mengambil kolom tertentu)
         $query = User::with([
             'role:id,name_role',
-            'anggota:id_anggota,nama_lengkap,email'
+            'anggota:id_anggota,nama_lengkap'
         ]);
 
         // Filter pencarian berdasarkan nama, email, atau username
         if (!empty($searchTerm)) {
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('name', 'like', "%{$searchTerm}%")
-                    ->orWhere('email', 'like', "%{$searchTerm}%")
+                    // ->orWhere('email', 'like', "%{$searchTerm}%")
                     ->orWhere('username', 'like', "%{$searchTerm}%");
             })->orWhereHas('role', function ($q) use ($searchTerm) {
                 $q->where('name_role', 'like', "%{$searchTerm}%");
@@ -101,7 +101,7 @@ class UserController extends Controller
                     return [
                         'id' => $user->id,
                         'name' => $user->name,
-                        'email' => $user->email,
+                        // 'email' => $user->email,
                         'username' => $user->username,
                         'id_anggota' => $user->id_anggota,
                         'role' => $user->role ? [
@@ -111,7 +111,7 @@ class UserController extends Controller
                         'anggota' => $user->anggota ? [
                             'id_anggota' => $user->anggota->id_anggota,
                             'nama_lengkap' => $user->anggota->nama_lengkap,
-                            'email' => $user->anggota->email,
+                            // 'email' => $user->anggota->email,
                         ] : null, // Jika anggota null
                     ];
                 }),
@@ -195,7 +195,7 @@ class UserController extends Controller
             // Validasi input
             $request->validate([
                 'name' => 'required|string|max:255',
-                'email' => 'required',
+                // 'email' => 'required',
                 'username' => 'required|string|unique:users,username|max:50',
                 'password' => 'required|string|min:4',
                 'role_id' => 'required|exists:roles,id', // Validasi bahwa role_id harus ada di tabel roles
@@ -205,7 +205,7 @@ class UserController extends Controller
             // Buat user baru
             $user = User::create([
                 'name' => $request->name,
-                'email' => $request->email,
+                // 'email' => $request->email,
                 'username' => $request->username,
                 'password' => bcrypt($request->password), // Enkripsi password
                 'role_id' => $request->role_id,
@@ -215,7 +215,8 @@ class UserController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'User berhasil ditambahkan!',
-                'data' => $user->load('role:id,name_role', 'anggota:id_anggota,nama_lengkap,email')
+                'data' => $user->load('role:id,name_role', 'anggota:id_anggota,nama_lengkap'),
+                // 'data' => $user->load('role:id,name_role', 'anggota:id_anggota,nama_lengkap,email')
 
             ], 201);
         } catch (ValidationException $e) {
@@ -315,7 +316,7 @@ class UserController extends Controller
             // Validasi input
             $request->validate([
                 'name' => 'string|max:255',
-                'email' => 'unique:users,email,' . $id,
+                // 'email' => 'unique:users,email,' . $id,
                 'username' => 'string|max:50|unique:users,username,' . $id,
                 'password' => 'nullable|string|min:4', // Password optional
                 'role_id' => 'exists:roles,id',
@@ -328,7 +329,7 @@ class UserController extends Controller
             // Update data user
             $user->update([
                 'name' => $request->name,
-                'email' => $request->email,
+                // 'email' => $request->email,
                 'username' => $request->username,
                 'role_id' => $request->role_id,
                 'id_anggota' => $request->id_anggota,
@@ -338,7 +339,8 @@ class UserController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'User berhasil diperbarui!',
-                'data' => $user->load('role:id,name_role', 'anggota:id_anggota,nama_lengkap,email'),
+                'data' => $user->load('role:id,name_role', 'anggota:id_anggota,nama_lengkap'),
+                // 'data' => $user->load('role:id,name_role', 'anggota:id_anggota,nama_lengkap,email'),
             ], 200);
         } catch (ValidationException $e) {
             return response()->json([

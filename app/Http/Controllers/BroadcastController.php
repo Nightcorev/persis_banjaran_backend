@@ -22,11 +22,10 @@ class BroadcastController extends Controller
 
         $query = BroadcastModel::query();
 
-        // Kalau ada search term, filter berdasarkan headline dan deskripsi
+        // Kalau ada search term, filter berdasarkan headline dan pesan
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('headline', 'ILIKE', '%' . $search . '%')
-                    ->orWhere('deskripsi', 'ILIKE', '%' . $search . '%');
+                $q->where('pesan', 'ILIKE', '%' . $search . '%');
             });
         }
 
@@ -52,14 +51,14 @@ class BroadcastController extends Controller
         //     'message' => 'Broadcast berhasil dibuat'
         // ], 201);
         $broadcast = BroadcastModel::create([
-            'headline' => $request->headline ?? null,
-            'deskripsi' => $request->deskripsi ?? null,
-            'tipe_broadcast' => $request->tipe_broadcast ?? null,
-            'nama_file' => $request->nama_file ?? null,
+            'pesan' => $request->pesan ?? null,
+            'lampiran' => $request->lampiran ?? null,
             'status_pengiriman' => $request->status_pengiriman ?? null,
             'waktu_pengiriman' => $this->convertTimestamp($request->waktu_pengiriman),
             'tujuan' => $request->tujuan ?? null,
         ]);
+
+        // $target_ids = $request->input('target_ids'); 
 
         Log::debug('waktu dari frontend:' . $konversiWaktu);
         Log::debug('waktu dikonversi:', ['waktu_pengiriman' => $broadcast->waktu_pengiriman]);
@@ -78,7 +77,8 @@ class BroadcastController extends Controller
 
         $noTelpList = null;
         if ($broadcast->tujuan === 'nomor_tertentu') {
-
+            $noTelpList = request('target_ids');
+            Log::debug('Nomor tertentu: ' . json_encode($noTelpList));
         } else if ($broadcast->tujuan === 'semua_pj') {
             Log::debug('masuk ke tujuan PJ');
 
@@ -118,10 +118,10 @@ class BroadcastController extends Controller
 
             $response = Http::post('http://localhost:3000/send_to_chatbot', [
                 'no_wa' => $noTelpList,
-                'pesan' => $broadcast->deskripsi,
+                'pesan' => $broadcast->pesan,
                 'status_pengiriman' => $broadcast->status_pengiriman,
                 'waktu_pengiriman' => $broadcast->waktu_pengiriman,
-                'nama_file' => $broadcast->nama_file
+                'lampiran' => $broadcast->lampiran
             ]);
 
             if ($response->successful()) {
